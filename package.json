@@ -1,0 +1,16 @@
+{
+  "name": "hot",
+  "version": "0.0.1",
+  "description": "A 'non-new' Templating language for javascripters",
+  "main": "hot.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "html",
+    "templates",
+    "javascript"
+  ],
+  "author": "Yassine Elouafi <yelouafi@gmail.com>",
+  "license": "MIT"
+}

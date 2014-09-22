@@ -1,4 +1,4 @@
 hot
 ===
 
-An 'non-new' Templating language for javascripters
+A 'non-new' Templating language for javascripters
