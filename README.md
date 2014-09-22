@@ -39,9 +39,9 @@ Just add `nant.js` to your includes.
 So what's this ?
 ================
 
-Obviuosly, this is not a new templating language for javascript; it simply uses javascript as the templating language.
+Obviuosly, this is not a new templating language for javascript; **javascript is the templating language**.
 
-As seen above, html tags are exposed as functions and you simply call those functions to build tour template. 
+As seen above, html tags are exposed as functions. you simply use the appropriate tag name to build your template. 
 
 attributes are passed to those functions as objects.
 
@@ -96,3 +96,51 @@ t.form({ class: 'form-horizontal', role: 'form' },
     )
 );
 ```
+
+Motivation
+==========
+
+As a web developer, what i really need is a powerful language that offer features like
+
+- Reusability
+- Refactoring
+- Testability
+
+So as a javascript'er what i really need is a real programming language to construct my screens
+
+observe the last bootstrap example, as we are in the javascript land, we can benefits from all the powerful language features and tooling to build our template
+
+```javascript
+bt = {};
+
+bt.horzForm = function horzForm(body) {
+    return nant.form({ class: 'form-horizontal', role: 'form' }, body );
+}
+
+bt.formGroup = function formGroup(label, input) {
+    nant.div({ class: 'form-group' },
+        label +
+        (input ? nant.div({ class: 'col-sm-10' }, input ) : '')
+    )
+}
+
+var myHtml = bt.horzForm(
+    bt.formGroup(
+        nant.label({ for:'email', class: 'col-sm-2', controlLabel: true}, 'Email'),
+        nant.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' })
+    ) +
+    bt.formGroup(
+        nant.div({ class: 'col-sm-offset-2 col-sm-10' },
+            nant.button({ type: 'submit', class: 'btn btn-default'}, 'Sign in')
+        )
+    )
+)
+```
+
+so you see the benefits from using javascript as our templating language
+
+- No need to learn another language, this is just another library
+- Uses function to defines your reusable blocks with argumens, conditionals, loops etc
+
+
+You can go even further building more reusable blocks using Mixins (see below)
