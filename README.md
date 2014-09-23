@@ -12,8 +12,8 @@ npm install nant
 Then use it
 
 ```javascript
-var nant = require('nant');
-var html = nant.p('this is as easy as writing javascript code');
+var nant = require('nant').ht;
+var html = ht.p('this is as easy as writing javascript code');
 ```
 
 ###On the Browser :
@@ -30,7 +30,8 @@ Just add `nant.js` to your includes.
 		<div id="placeholder">...</div>
 		<script>
 			var el = document.getElementById('placeholder');
-			el.innerHTML = nant.p('this is as easy as writing javascript code'); 
+			var ht = nant.ht;
+			el.innerHTML = ht.p('this is as easy as writing javascript code'); 
 		</script>
 	</body>
 </html>
@@ -41,12 +42,12 @@ So what's this ?
 
 Obviuosly, this is not a new templating language for javascript; **javascript is the templating language**.
 
-As seen above, html tags are exposed as functions. you simply use the appropriate tag name to build your template. 
+Html tags are exposed as functions. you simply use the appropriate tag name to build your template. 
 
-attributes are passed to those functions as objects.
+Tag attributes are passed as arguments.
 
 ```javascript
-nant.input({ type: 'text', required: 'true', name: 'myinput'});
+ht.input({ type: 'text', required: 'true', name: 'myinput'});
 ```
 
 this will become
@@ -55,92 +56,123 @@ this will become
 <input type="text" required="required" name="myinput">
 ```
 
-tag function can take an optional body 
+Tag body is passed as an optional argument
 
 ```javascript
-nant.div({ id: 'myid', class: 'myclass' }, 'String body');
+ht.div({ id: 'myid', class: 'myclass' }, 'String body');
 ```
 
-besides plain strings, you can pass other tags as body
+besides plain strings, you can pass nested tags as body
 
 ```javascript
-nant.form({ id: 'myform', class: 'myclass' }, 
-    nant.input({ name: 'myinput' })
+ht.form({ id: 'myform', class: 'myclass' }, 
+    ht.input({ name: 'myinput' })
 );
 ```
 
-if there is more than a tag, simply uses `+` to join them
+if you need to embody multiples tags, simply list them in order
 
 ```javascript
-nant.form({ id: 'myform', class: 'myclass' }, 
-    nant.label({ for: 'myinput' }, 'My input') + 
-    nant.input({ id:'myinput', name: 'myinput' })
+ht.form({ id: 'myform', class: 'myclass' }, 
+    ht.label({ for: 'myinput' }, 'My input')
+    ht.input({ id:'myinput', name: 'myinput' })
 );
 ```
+
+More examples
+==============
 
 the following exemple builds a twitter bootstrap form
 
 ```javascript
-var t = nant;
-t.form({ class: 'form-horizontal', role: 'form' }, 
-    t.div({ class: 'form-group' },
-        t.label({ for:'email', class: 'col-sm-2', controlLabel: true}, 'Email') +
-        t.div({ class: 'col-sm-10' },
-            t.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' })
+ht.form({ class: 'form-horizontal', role: 'form' }, 
+    ht.div({ class: 'form-group' },
+        ht.label({ for:'email', class: ['col-sm-2', 'control-label']}, 'Email'),
+        ht.div({ class: 'col-sm-10' },
+            ht.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' })
         )
-    ) +
-    t.div({ class: 'form-group' },
-        t.div({ class: 'col-sm-offset-2 col-sm-10' },
-            t.button({ type: 'submit', class: 'btn btn-default'}, 'Sign in')
+    ),
+    ht.div({ class: 'form-group' },
+        ht.div({ class: 'col-sm-offset-2 col-sm-10' },
+            ht.button({ type: 'submit', class: 'btn btn-default'}, 'Sign in')
         )
     )
 );
 ```
 
-Motivation
-==========
-
-As a web developer, what i really need is a powerful language that offer features like
-
-- Reusability
-- Refactoring
-- Testability
-
-So as a javascript'er what i really need is a real programming language to construct my screens
-
-observe the last bootstrap example, as we are in the javascript land, we can benefits from all the powerful language features and tooling to build our template
+As we are simply using javascript, we are free to structure our templating the way we want. For the last example we can rewrite it as follow
 
 ```javascript
-bt = {};
+var bt = nant.bt = {};
 
-bt.horzForm = function horzForm(body) {
-    return nant.form({ class: 'form-horizontal', role: 'form' }, body );
+bt.horzForm = function horzForm() {
+    var body = Array.prototype.slice.call(arguments);
+    return ht.form({ class: 'form-horizontal', role: 'form' }, body );
 }
 
-bt.formGroup = function formGroup(label, input) {
-    nant.div({ class: 'form-group' },
-        label +
-        (input ? nant.div({ class: 'col-sm-10' }, input ) : '')
+bt.formGroup = function formGroup(input, label) {
+    return ht.div({ class: 'form-group' },
+        label,
+        // classes can be passed as conditional object { class1: condition, class2: condition, ...}
+        ht.div({ class: { 'col-sm-10': true, 'col-sm-offset-2': !label }}, input )
     )
 }
 
 var myHtml = bt.horzForm(
     bt.formGroup(
-        nant.label({ for:'email', class: 'col-sm-2', controlLabel: true}, 'Email'),
-        nant.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' })
-    ) +
+        ht.label({ for:'email', class: ['col-sm-2', 'control-label']}, 'Email'),
+        ht.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' })
+    ),
     bt.formGroup(
-        nant.div({ class: 'col-sm-offset-2 col-sm-10' },
-            nant.button({ type: 'submit', class: 'btn btn-default'}, 'Sign in')
-        )
+        ht.button({ type: 'submit', class: 'btn btn-default'}, 'Sign in')
     )
 )
 ```
 
-so you see the benefits from using javascript as our templating language
+so the main benefits from using javascript as the templating language
 
-- No need to learn another language, this is just another library
+- No need to learn another language
 - Uses function to defines your reusable blocks with argumens, conditionals, loops etc
 
 
-You can go even further building more reusable blocks using Mixins (see below)
+There is More
+=============
+
+Lets review the last example, w've now reusable bootstrap tags to build form elements. But you may have noted that the grid's columns layout is hard coded inside the templates.
+
+What if we want to move layout defintion (ie `col-sm-*` classes) outside so we can apply the layout we want to our templates?
+
+Response is `Mixins`. a mixin allows us to apply transformations to a Tag we already built.
+
+So we can rewrite the bootstrap form example as follow
+
+```javascript
+var layout = {
+    label: { class: 'col-sm-2' },
+    input: { class: 'col-sm-10' },
+    offset: { class: 'col-sm-offset-2'}
+}
+
+bt.formGroup = function formGroup(input, label) {
+    input = ht.div(input).mixin(layout.input);
+    if(label) {
+        label = label.mixin(layout.label);
+    } else {
+        input = input.mixin(layout.offset);
+    }
+    return ht.div({ class: 'form-group' },
+        label, input
+    )
+}
+
+var myHtml = bt.horzForm(
+    bt.formGroup(
+        ht.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' }),
+        ht.label({ for:'email', class: 'control-label'}, 'Email')
+        
+    ),
+    bt.formGroup(
+        ht.button({ type: 'submit', class: 'btn btn-default'}, 'Sign in')
+    )
+)
+```
