@@ -78,6 +78,8 @@ ht.form({ id: 'myform', class: 'myclass' },
     ht.input({ id:'myinput', name: 'myinput' })
 );
 ```
+You can also group body tags in arrays
+
 
 More examples
 ==============
@@ -87,6 +89,7 @@ the following exemple builds a twitter bootstrap form
 ```javascript
 ht.form({ class: 'form-horizontal', role: 'form' }, 
     ht.div({ class: 'form-group' },
+        // css classes can be passed as array
         ht.label({ for:'email', class: ['col-sm-2', 'control-label']}, 'Email'),
         ht.div({ class: 'col-sm-10' },
             ht.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' })
@@ -100,7 +103,7 @@ ht.form({ class: 'form-horizontal', role: 'form' },
 );
 ```
 
-As we are simply using javascript, we are free to structure our templating the way we want. For the last example we can rewrite it as follow
+As we are simply using javascript, we are free to structure our templating the way we want. So we can also write
 
 ```javascript
 var bt = nant.bt = {};
@@ -113,7 +116,7 @@ bt.horzForm = function horzForm() {
 bt.formGroup = function formGroup(input, label) {
     return ht.div({ class: 'form-group' },
         label,
-        // classes can be passed as conditional object { class1: condition, class2: condition, ...}
+        // css classes can also be passed as conditional object { class1: condition, class2: condition, ...}
         ht.div({ class: { 'col-sm-10': true, 'col-sm-offset-2': !label }}, input )
     )
 }
@@ -129,13 +132,13 @@ var myHtml = bt.horzForm(
 )
 ```
 
-so the main benefits from using javascript as the templating language
+see the benefits from using javascript as the templating language
 
 - No need to learn another language
-- Uses function to defines your reusable blocks with argumens, conditionals, loops etc
+- Uses functions and other constructs to define your building block
 
 
-There is More
+Mixins
 =============
 
 Lets review the last example, w've now reusable bootstrap tags to build form elements. But you may have noted that the grid's columns layout is hard coded inside the templates.
@@ -148,9 +151,11 @@ So we can rewrite the bootstrap form example as follow
 
 ```javascript
 var layout = {
-    label: { class: 'col-sm-2' },
-    input: { class: 'col-sm-10' },
-    offset: { class: 'col-sm-offset-2'}
+    cols: [2, 10],
+    media: 'sm',
+    label: { class: 'col-'+ layout.media + '-' + layout.cols[0] },
+    input: { class: 'col-'+ layout.media + '-' + layout.cols[1] },
+    offset: { class: 'col-'+ layout.media + '-offset-' + layout.cols[0] }
 }
 
 bt.formGroup = function formGroup(input, label) {
@@ -176,3 +181,34 @@ var myHtml = bt.horzForm(
     )
 )
 ```
+
+See how we've discarded all those `col-sm-*` references from form templates. If we want to change the form layout we have to apply changes in one place; This is good example of how javascript allows for good concern separation.
+
+We can even do better by abstracting more bootstrap grid concepts
+
+```javascript
+function BtFormLayout(cols, media) {
+    this.cols = cols;
+    this.media = media;
+	
+	this.label = { class: 'col-'+ this.media + '-' + this.cols[0] };
+    this.input = { class: 'col-'+ this.media + '-' + this.cols[1] };
+    this.offset = { class: 'col-'+ this.media + '-offset-' + this.cols[0] };
+}
+
+var layout = new BtFormLayout([2,10], 'sm');
+
+bt.formGroup = function formGroup(input, label) {
+    input = ht.div(input).mixin(layout.input);
+    if(label) {
+        label = label.mixin(layout.label);
+    } else {
+        input = input.mixin(layout.offset);
+    }
+    return ht.div({ class: 'form-group' },
+        label, input
+    )
+}
+```
+
+There is no limit on how you could acheive better reusability; Because you simply use your habitual programming language, templates defintion fit naturally with the rest of your app.
