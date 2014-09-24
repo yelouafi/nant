@@ -254,7 +254,7 @@ ht.div(/* ... */).mixin( myMixin );
 
 so basically, the mixin function take a tag parameter, applies whatever transformations to it and then return :
 
-- either the some tag (generally when transformations are limited to attributes manipulation)
+- either the same tag (generally when transformations are limited to attributes manipulation)
 - or even another new constructed tag (for example wrap an `input` tag with a `div`)
 
 There is no limit of what you can do with function mixins just beware to always return a meaningful value (generally this will be a `Tag` object)
