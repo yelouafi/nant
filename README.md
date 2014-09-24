@@ -85,6 +85,7 @@ ht.form({ id: 'myform', class: 'myclass' },
     ht.input({ id:'myinput', name: 'myinput' })
 );
 ```
+
 You can also group body tags in arrays
 
 ```javascript
@@ -98,7 +99,59 @@ ht.form({ id: 'myform', class: 'myclass' },
 );
 ```
 
-Application example: Bootstrap forms
+css class attribute can be defined as an array
+
+```javascript
+ht.input({ class: ['class1', 'class2'] })
+```
+```html
+<input class="class1 class2">
+```
+
+
+class can also be a conditional object, only members with a truthy value will be picked
+
+```javascript
+ht.input({ id:'myinput', name: 'myinput', class: { class1: true, class2: 1 > 2 })
+```
+```html
+<input class="class1">
+```
+
+`nant` supports passing nested objects as attribute values, this is useful in some cases (if you're working with data-binding libs like **angular** or **knockout**)
+
+```javascript
+ht.div({ objAttr: { strAttr: 'strAttr', numAttr: 1, nested: { nestedStr: 'nest\'edStr', nestedNum: 1 }}})
+```
+```html
+<div obj-attr="{strAttr: 'strAttr', numAttr: 1, nested: {nestedStr: 'nest\'edStr', nestedNum: 1}}"></div>
+```
+
+Note also that `camelCased` tag attribute names are transformed to their `dash-delimited` countreparts (ie `objAttr` become `obj-attr`)
+
+Sometimes, when working with data-binding libs, we have to pass expressions in the object attribute that will be evaluated later by the lib. observe this angular example
+
+```html
+<p ng-class="{strike: !deleted, bold: some.isBold() }">...</p>
+```
+
+we can't write this object straight into our code because theit will be evaluateed directly
+
+```javascript
+// Error, strike and bold members will get evaluated right now, probably raises an error if deleted or some aren't in the scope
+ht.p({ ngClass: {strike: !deleted, bold: some.isBold() } })
+```
+
+instead use `nant.uq(expr)` to build an unquoted expression
+
+```javascript
+// Correct , strike and bold members will get evaluated right now
+ht.p({ ngClass: {strike: nant.uq('!deleted'), bold: nant.uq('some.isBold()') } })
+```
+
+
+
+Tutorial: Bootstrap forms
 =====================================
 
 the following exemple builds a twitter bootstrap form
@@ -106,7 +159,6 @@ the following exemple builds a twitter bootstrap form
 ```javascript
 ht.form({ class: 'form-horizontal', role: 'form' }, 
     ht.div({ class: 'form-group' },
-        // css classes can be passed as array
         ht.label({ for:'email', class: ['col-sm-2', 'control-label']}, 'Email'),
         ht.div({ class: 'col-sm-10' },
             ht.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' })
@@ -258,3 +310,29 @@ so basically, the mixin function take a tag parameter, applies whatever transfor
 - or even another new constructed tag (for example wrap an `input` tag with a `div`)
 
 There is no limit of what you can do with function mixins just beware to always return a meaningful value (generally this will be a `Tag` object)
+
+Custom Tags
+===========
+
+All exemples above simply define custom functions that return well known html tags; but you can also define your own custom tags that follows the html syntax rules. This maybe even necessary if you're working with some third party lib that requires custom tags (like `angularjs`).
+
+Use `nant.makeTag` to make a tag builder function
+
+```javascript
+// define your namespace
+var ns = nant.ns = {};
+// define your custom element inside the namespace
+ns.myElement = nant.makeTag('MyElement', isVoid)
+
+//Later you can use your tag function
+var myHtml = ht.div(
+    ns.myElement({ ...}, body )
+)
+```
+If `isVoid` parameter is true, then any body provided to the tag function will be ignored and closing tag (`</myelement>`) will not be generated upon tag stringification
+
+
+
+
+
+

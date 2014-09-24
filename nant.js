@@ -111,7 +111,7 @@ function exports() {
                     body = body + getBody(bodyConf[i]);
                 }
             } else if(typeof bodyConf === 'function') {
-                body = bodyConf.call(self);
+                body = bodyConf(self);
             } else if(bodyConf !== null && bodyConf !== undefined) {
                 body = body + bodyConf;
             }
@@ -121,26 +121,27 @@ function exports() {
     
     nant.Tag = Tag;
     var ht = nant.ht = {};
-    function makeTag(name, isVoid) {
-        ht[name] = function () {
-            var attrs, body;
-            var args = Array.prototype.slice.call(arguments);
-            if(args.length > 0) {
-                var arg0 = args[0];
-                if(typeof arg0 === 'string' || typeof arg0 === 'function' || arg0 instanceof Tag || Array.isArray(arg0) ) {
-                    body = args;
-                } else {
-                    attrs = arg0;
-                    body = args.length > 1 ? args.slice(1) : '';
-                }
+    nant.getTagMembers = function(args) {
+        var attrs, body;
+        if(args.length > 0) {
+            var arg0 = args[0];
+            if(typeof arg0 === 'string' || typeof arg0 === 'function' || arg0 instanceof Tag || Array.isArray(arg0) ) {
+                body = args;
+            } else {
+                attrs = arg0;
+                body = args.length > 1 ? args.slice(1) : '';
             }
-            
-            return new Tag({
-                name: name,
-                attrs: attrs || {},
-                body: body || '',
-                isVoid: isVoid
-            });
+        }
+        return {
+            attrs: attrs || {}, body: body || ''
+        }
+    }
+    nant.makeTag = function(name, isVoid) {
+        return function () {
+            var config = nant.getTagMembers( Array.prototype.slice.call(arguments) );
+            config.name = name;
+            config.isVoid = isVoid;
+            return new Tag( config );
         }
         
         
@@ -149,10 +150,12 @@ function exports() {
     var nvTags = ['a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'blockquote', 'body', 'button', 'canvas', 'caption', 'cite', 'code', 'colgroup', 'datalist', 'dd', 'del', 'details', 'dfn', 'div', 'dl', 'dt', 'em', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'html', 'i', 'iframe', 'ins', 'kbd', 'label', 'legend', 'li', 'map', 'mark', 'menu', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'u', 'ul', 'var', 'video'];
     
     for (var i = 0; i < voidTags.length; i++) {
-        makeTag(voidTags[i], true);
+        var vtag = voidTags[i];
+        ht[vtag] = nant.makeTag(vtag, true);
     }
-    for (var j = 0; j < nvTags.length; j++) {
-        makeTag(nvTags[j], false);
+    for (var ii = 0; ii < nvTags.length; ii++) {
+        var nvtag = nvTags[ii];
+        ht[nvtag] = nant.makeTag(nvtag, false);
     }
     
     return nant;
