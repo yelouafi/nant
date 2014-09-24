@@ -19,7 +19,7 @@ npm install nant
 Then use it
 
 ```javascript
-var nant = require('nant').ht;
+var ht = require('nant').ht;
 var html = ht.p('this is as easy as writing javascript code');
 ```
 
