@@ -76,7 +76,7 @@ function exports() {
         
         function getAttr(val, nested) {
             if( val === null || val === undefined || val === false ) {
-                return false;
+                return nested ? val : false;
             } else if( val instanceof Uq) {
                 return val.str;
             }
