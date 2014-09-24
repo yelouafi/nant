@@ -239,15 +239,13 @@ You can go ever further to acheive better reusability; Because you're in the jav
 
 Above w've seen **attribute mixins**. They are quite simple to use, you pass in an attribute definition; the `mixin` function extendsthe tag's attributes with the new ones.
 
-Well there is another mixin type: you can provide the `mixin` method with your own function; it will be called then with tag object as parameter.
+Well there is also **function mixins**: you can provide the `mixin` method with your own function; it will be called then with tag object as parameter.
 
 
 ```javascript
 function myMixin(tag) {
-    // do something cool
-    ...
-    
-    // don't forget to return : 1- either the some tag; 2- or other tag that embody the provided one
+    // do something cool ...
+    // don't forget to return
     return tag;
 }
 
