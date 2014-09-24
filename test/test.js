@@ -130,6 +130,7 @@ describe('html', function(){
         
         function applyClass(tag) {
             nant.extend(tag.attrs, { class: 'my-input-class'});
+            return tag;
         }
     
         assert.equal(

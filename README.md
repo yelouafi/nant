@@ -1,3 +1,10 @@
+Features
+========
+
+- No need to learn another language, it's plain javascript
+- Uses all language constructs to define your reusable building blocks
+- Mixins allows you to separate UI concernes (styles, layout..)
+
 Get started
 ===========
 
@@ -47,13 +54,13 @@ Html tags are exposed as functions. you simply use the appropriate tag name to b
 Tag attributes are passed as arguments.
 
 ```javascript
-ht.input({ type: 'text', required: 'true', name: 'myinput'});
+ht.input({ type: 'text', name: 'myinput', required: 'true'});
 ```
 
 this will become
 
 ```html
-<input type="text" required="required" name="myinput">
+<input type="text" name="myinput" required>
 ```
 
 Tag body is passed as an optional argument
@@ -62,7 +69,7 @@ Tag body is passed as an optional argument
 ht.div({ id: 'myid', class: 'myclass' }, 'String body');
 ```
 
-besides plain strings, you can pass nested tags as body
+You can pass nested tags as body
 
 ```javascript
 ht.form({ id: 'myform', class: 'myclass' }, 
@@ -74,15 +81,25 @@ if you need to embody multiples tags, simply list them in order
 
 ```javascript
 ht.form({ id: 'myform', class: 'myclass' }, 
-    ht.label({ for: 'myinput' }, 'My input')
+    ht.label({ for: 'myinput' }, 'My input'),
     ht.input({ id:'myinput', name: 'myinput' })
 );
 ```
 You can also group body tags in arrays
 
+```javascript
+ht.form({ id: 'myform', class: 'myclass' },
+    ht.h1('Form header'),
+    [
+        ht.label({ for: 'myinput' }, 'My input'),
+        ht.input({ id:'myinput', name: 'myinput' })
+    ],
+    ht.button('Submit')
+);
+```
 
-Application example: Bootstrap form
-===================================
+Application example: Bootstrap forms
+=====================================
 
 the following exemple builds a twitter bootstrap form
 
@@ -131,11 +148,6 @@ var myHtml = bt.horzForm(
     )
 )
 ```
-
-see the benefits from using javascript as the templating language
-
-- No need to learn another language
-- Uses all language constructs to define your reusable building blocks
 
 
 Mixins
@@ -215,7 +227,7 @@ bt.formGroup = function formGroup(input, label, layout) {
 var myHtml = bt.horzForm(
     bt.formGroup(
         ht.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' }),
-        ht.label({ for:'email', class: 'control-label'}, 'Email'),
+        ht.label({ for:'email', class: 'control-label'}, 'Email')
     ),
     bt.formGroup(
         ht.button({ type: 'submit', class: 'btn btn-default'}, 'Sign in')

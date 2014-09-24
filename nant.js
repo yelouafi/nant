@@ -29,24 +29,26 @@ function exports() {
         return new Uq(str);
     }
     function Tag(tag) {
-        this.tag = tag;
+        this.name = tag.name;
+        this.attrs = tag.attrs;
+        this.body = tag.body;
+        this.isVoid = tag.isVoid;
     }
     Tag.prototype.mixin = function(mixin) {
         if(typeof mixin === 'function') {
-            return mixin.call(this, this.tag);
+            return mixin(this);
         } else {
-            nant.extend(this.tag.attrs, mixin);
+            nant.extend(this.attrs, mixin);
             return this;
         }
     }
     Tag.prototype.toString = function() {
         var self = this;
-        var conf = this.tag;
         var attrArr = [''];
-        var aCls = conf.attrs.class;
+        var aCls = self.attrs.class;
         if (aCls) {
             if(Array.isArray(aCls)) {
-                conf.attrs.class = aCls.join(' ') ;    
+                self.attrs.class = aCls.join(' ') ;    
             } else if( typeof aCls === 'object') {
                 var clsArr = [];
                 for(var clsName in aCls) {
@@ -54,12 +56,12 @@ function exports() {
                         clsArr.push(clsName);
                     }
                 }
-                conf.attrs.class = clsArr.join(' ') ;
+                self.attrs.class = clsArr.join(' ') ;
             }
             
         }
-        for (var k in conf.attrs) {
-            var val = getAttr( conf.attrs[k] );
+        for (var k in self.attrs) {
+            var val = getAttr( self.attrs[k] );
             var normK = ccToUnd(k);
             if(val === true ) {
                 attrArr.push( normK );
@@ -70,7 +72,7 @@ function exports() {
             }
         }
         
-        return '<' + conf.name + attrArr.join(' ') + '>' + ( !conf.isVoid ? getBody(conf.body) + '</' + conf.name + '>' : '') ;
+        return '<' + self.name + attrArr.join(' ') + '>' + ( !self.isVoid ? getBody(self.body) + '</' + self.name + '>' : '') ;
         
         function getAttr(val, nested) {
             if( val === null || val === undefined || val === false ) {
