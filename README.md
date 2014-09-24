@@ -1,3 +1,5 @@
+`nant` lets you generate your html templates with plain javascript (browser and server).
+
 Features
 ========
 

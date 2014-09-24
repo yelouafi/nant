@@ -1,9 +1,8 @@
 {
   "name": "nant",
-  "version": "0.1",
+  "version": "0.0.2",
   "description": "A 'not-another-templating-language' for javascripters",
   "main": "nant.js",
-  ""
   "scripts": {
     "test": "test"
   },
@@ -15,8 +14,8 @@
   "author": "Yassine Elouafi <yelouafi@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yelouafi/nant.git",
-    "homepage": "https://github.com/yelouafi/nant",
+    "url": "https://github.com/yelouafi/nant.git"
   },
+  "homepage": "https://github.com/yelouafi/nant",
   "license": "MIT"
 }
