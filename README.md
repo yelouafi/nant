@@ -81,8 +81,8 @@ ht.form({ id: 'myform', class: 'myclass' },
 You can also group body tags in arrays
 
 
-More examples
-==============
+Application example: Bootstrap form
+===================================
 
 the following exemple builds a twitter bootstrap form
 
@@ -135,29 +135,31 @@ var myHtml = bt.horzForm(
 see the benefits from using javascript as the templating language
 
 - No need to learn another language
-- Uses functions and other constructs to define your building block
+- Uses all language constructs to define your reusable building blocks
 
 
 Mixins
-=============
+======
 
-Lets review the last example, w've now reusable bootstrap tags to build form elements. But you may have noted that the grid's columns layout is hard coded inside the templates.
+Lets review the last example, w've reusable bootstrap tags to build form elements. 
 
-What if we want to move layout defintion (ie `col-sm-*` classes) outside so we can apply the layout we want to our templates?
+You may have noted that the grid's columns layout (all those `col-sm-*` classes) is hard coded inside the templates.
 
-Response is `Mixins`. a mixin allows us to apply transformations to a Tag we already built.
+What if we want to move layout defintion (`col-sm-*` classes) outside ? we can make changes on form layout once and then apply it to all our form template.
+
+Response is `Mixins`. a mixin allows us to apply transformations to a prebuilt Tag.
 
 So we can rewrite the bootstrap form example as follow
 
 ```javascript
+// Form layout definition
 var layout = {
-    cols: [2, 10],
-    media: 'sm',
-    label: { class: 'col-'+ layout.media + '-' + layout.cols[0] },
-    input: { class: 'col-'+ layout.media + '-' + layout.cols[1] },
-    offset: { class: 'col-'+ layout.media + '-offset-' + layout.cols[0] }
+    label: { class: 'col-sm-2' },
+    input: { class: 'col-sm-10' },
+    offset: { class: 'col-sm-offset-2' }
 }
 
+// Form group apply layout def to its input and label
 bt.formGroup = function formGroup(input, label) {
     input = ht.div(input).mixin(layout.input);
     if(label) {
@@ -182,9 +184,9 @@ var myHtml = bt.horzForm(
 )
 ```
 
-See how we've discarded all those `col-sm-*` references from form templates. If we want to change the form layout we have to apply changes in one place; This is good example of how javascript allows for good concern separation.
+See how we've decoupled form layout and form field définition. 
 
-We can even do better by abstracting more bootstrap grid concepts
+We can do better by abstracting away more bootstrap grid concepts
 
 ```javascript
 function BtFormLayout(cols, media) {
@@ -198,7 +200,7 @@ function BtFormLayout(cols, media) {
 
 var layout = new BtFormLayout([2,10], 'sm');
 
-bt.formGroup = function formGroup(input, label) {
+bt.formGroup = function formGroup(input, label, layout) {
     input = ht.div(input).mixin(layout.input);
     if(label) {
         label = label.mixin(layout.label);
@@ -209,6 +211,40 @@ bt.formGroup = function formGroup(input, label) {
         label, input
     )
 }
+
+var myHtml = bt.horzForm(
+    bt.formGroup(
+        ht.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' }),
+        ht.label({ for:'email', class: 'control-label'}, 'Email'),
+    ),
+    bt.formGroup(
+        ht.button({ type: 'submit', class: 'btn btn-default'}, 'Sign in')
+    )
+)
 ```
 
-There is no limit on how you could acheive better reusability; Because you simply use your habitual programming language, templates defintion fit naturally with the rest of your app.
+You can go ever further to acheive better reusability; Because you're in the javascript land, you can apply your favourite desgin patterns.
+
+Above w've seen **attribute mixins**. They are quite simple to use, you pass in an attribute definition; the `mixin` function extendsthe tag's attributes with the new ones.
+
+Well there is another mixin type: you can provide the `mixin` method with your own function; it will be called then with tag object as parameter.
+
+
+```javascript
+function myMixin(tag) {
+    // do something cool
+    ...
+    
+    // don't forget to return : 1- either the some tag; 2- or other tag that embody the provided one
+    return tag;
+}
+
+ht.div(/* ... */).mixin( myMixin );
+```
+
+so basically, the mixin function take a tag parameter, applies whatever transformations to it and then return :
+
+1- either the some tag (generally when transformations are limited to attributes manipulation)
+2- or even another new constructed tag (for example wrap an `input` tag with a `div`)
+
+There is no limit of what you can do with function mixins just beware to always return a meaningful value (generally this will be a `Tag` object)

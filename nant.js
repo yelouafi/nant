@@ -33,11 +33,11 @@ function exports() {
     }
     Tag.prototype.mixin = function(mixin) {
         if(typeof mixin === 'function') {
-            mixin.call(this, this.tag);
+            return mixin.call(this, this.tag);
         } else {
-            nant.extend(this.tag.attrs, mixin)
+            nant.extend(this.tag.attrs, mixin);
+            return this;
         }
-        return this;
     }
     Tag.prototype.toString = function() {
         var self = this;
