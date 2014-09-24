@@ -3,7 +3,7 @@ Features
 
 - No need to learn another language, it's plain javascript
 - Uses all language constructs to define your reusable building blocks
-- Mixins allows you to separate UI concernes (styles, layout..)
+- Mixins to separate UI concernes (styles, layout..)
 
 Get started
 ===========
@@ -43,7 +43,7 @@ Just add `nant.js` to your includes.
 	</body>
 </html>
 ```
-
+-------------------------------------------------------------------------------------------
 So what's this ?
 ================
 
@@ -77,12 +77,25 @@ ht.form({ id: 'myform', class: 'myclass' },
 );
 ```
 
+If you pass a function as body, it will be called upon rendering with embodding tag attributes
+```javascript
+function myBody(tag) {
+    return ht.p('Hello to ' + tag.name);
+}
+
+ht.form({ id: 'myform', class: 'myclass' }, 
+    myBody
+);
+```
+
 if you need to embody multiples tags, simply list them in order
 
 ```javascript
 ht.form({ id: 'myform', class: 'myclass' }, 
     ht.label({ for: 'myinput' }, 'My input'),
-    ht.input({ id:'myinput', name: 'myinput' })
+    ht.input({ id:'myinput', name: 'myinput' }),
+    'Help text',
+    someFunction
 );
 ```
 
@@ -99,6 +112,7 @@ ht.form({ id: 'myform', class: 'myclass' },
 );
 ```
 
+
 css class attribute can be defined as an array
 
 ```javascript
@@ -112,16 +126,27 @@ ht.input({ class: ['class1', 'class2'] })
 class can also be a conditional object, only members with a truthy value will be picked
 
 ```javascript
-ht.input({ id:'myinput', name: 'myinput', class: { class1: true, class2: 1 > 2 })
+ht.input({ class: { class1: true, class2: 1 > 2 })
 ```
 ```html
 <input class="class1">
 ```
+------------------------------------------------------------------------------------------
+###Object attributes (aka angular/knockout/... users)
 
-`nant` supports passing nested objects as attribute values, this is useful in some cases (if you're working with data-binding libs like **angular** or **knockout**)
+**nant** supports passing nested objects as attribute values, this is useful in some cases (if you're working with data-binding libs like **angular** or **knockout**)
 
 ```javascript
-ht.div({ objAttr: { strAttr: 'strAttr', numAttr: 1, nested: { nestedStr: 'nest\'edStr', nestedNum: 1 }}})
+ht.div({ 
+    objAttr: { 
+        strAttr: 'strAttr', 
+        numAttr: 1, 
+        nested: { 
+            nestedStr: 'nest\'edStr', 
+            nestedNum: 1 
+        }
+    }
+})
 ```
 ```html
 <div obj-attr="{strAttr: 'strAttr', numAttr: 1, nested: {nestedStr: 'nest\'edStr', nestedNum: 1}}"></div>
@@ -149,7 +174,7 @@ instead use `nant.uq(expr)` to build an unquoted expression
 ht.p({ ngClass: {strike: nant.uq('!deleted'), bold: nant.uq('some.isBold()') } })
 ```
 
-
+---------------------------------------------------------------------------------------------
 
 Tutorial: Bootstrap forms
 =====================================
@@ -201,6 +226,7 @@ var myHtml = bt.horzForm(
 )
 ```
 
+--------------------------------------------------------------------------------------
 
 Mixins
 ======
@@ -310,6 +336,8 @@ so basically, the mixin function take a tag parameter, applies whatever transfor
 - or even another new constructed tag (for example wrap an `input` tag with a `div`)
 
 There is no limit of what you can do with function mixins just beware to always return a meaningful value (generally this will be a `Tag` object)
+
+---------------------------------------------------------------------------------
 
 Custom Tags
 ===========
