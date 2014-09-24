@@ -160,7 +160,7 @@ Sometimes, when working with data-binding libs, we have to pass expressions in t
 <p ng-class="{strike: !deleted, bold: some.isBold() }">...</p>
 ```
 
-we can't write this object straight into our code because theit will be evaluateed directly
+we can't write this object straight into our code because the expressions will be evaluateed directly
 
 ```javascript
 // Error, strike and bold members will get evaluated right now, probably raises an error if deleted or some aren't in the scope
@@ -170,7 +170,7 @@ ht.p({ ngClass: {strike: !deleted, bold: some.isBold() } })
 instead use `nant.uq(expr)` to build an unquoted expression
 
 ```javascript
-// Correct , strike and bold members will get evaluated right now
+// Correct , strike and bold members will get evaluated later
 ht.p({ ngClass: {strike: nant.uq('!deleted'), bold: nant.uq('some.isBold()') } })
 ```
 
