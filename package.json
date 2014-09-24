@@ -1,7 +1,7 @@
 {
-  "name": "hot",
+  "name": "nant",
   "version": "0.0.1",
-  "description": "A 'non-new' Templating language for javascripters",
+  "description": "A 'not-another-templating-language' for javascripters",
   "main": "hot.js",
   "scripts": {
     "test": "test"

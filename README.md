@@ -77,7 +77,7 @@ ht.form({ id: 'myform', class: 'myclass' },
 );
 ```
 
-If you pass a function as body, it will be called upon rendering with embodding tag attributes
+If you pass a function as body, it will be called upon rendering (with the tag as parameter)
 ```javascript
 function myBody(tag) {
     return ht.p('Hello to ' + tag.name);
