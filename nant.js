@@ -149,15 +149,46 @@ function exports() {
             attrs: attrs || {}, body: body || ''
         }
     }
+    var mixins = [];
+    nant.mixin = function(selector, fn, name) {
+        function getFnName(fn) {
+            var f = typeof fn == 'function';
+            var s = f && ((fn.name && ['', fn.name]) || fn.toString().match(/function ([^\(]+)/));
+            return (!f && null) || (s && s[1] || null);
+        }
+        name = name || getFnName(fn);
+        if(!name) {
+            throw Error('nant.mixin: either `fn` param must be a non anonymous function or provide a name in 3rd param');
+        }
+        mixins.push({
+            name: name, selector: selector, fn: fn
+        });
+    }
     nant.makeTag = function(name, isVoid) {
         return function () {
             var config = nant.getTagMembers( Array.prototype.slice.call(arguments) );
             config.name = name;
             config.isVoid = isVoid;
-            return new Tag( config );
+            var tag = new Tag( config );
+            for (var i = 0; i < mixins.length; i++) {
+                var mx = mixins[i];
+                if( match(mx.selector, tag) ) {
+                    tag[mx.name] = mx.fn.bind(tag);
+                }
+            }
+            return tag;
         }
         
-        
+        function match(selector, tag) {
+            if( typeof selector === 'string' ) {
+                return selector === tag.name;
+            } else if( typeof selector === 'function' ) {
+                return selector(tag);
+            } else if(Array.isArray(selector) ) {
+                return selector.indexOf(tag.name) >= 0;
+            }
+            return false;
+        }
     }
     var voidTags = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
     var nvTags = ['a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'blockquote', 'body', 'button', 'canvas', 'caption', 'cite', 'code', 'colgroup', 'datalist', 'dd', 'del', 'details', 'dfn', 'div', 'dl', 'dt', 'em', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'html', 'i', 'iframe', 'ins', 'kbd', 'label', 'legend', 'li', 'map', 'mark', 'menu', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'u', 'ul', 'var', 'video'];

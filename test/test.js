@@ -183,4 +183,57 @@ describe('mixins', function() {
             '<input id="myinput" name="myinput" class="my-input-class">'
         );
     });
+    
+    it('should apply global mixin to matching tag name', function(){
+        
+        function myattr() {
+            assert(this instanceof nant.Tag)
+            return this.mixin({ myattr: this.name + '-attr'});
+        }
+        
+        nant.mixin( 'input', myattr )
+        
+        assert.equal(
+            
+            ht.input({ name: 'myinput' }).myattr().toString(),
+            
+            '<input name="myinput" myattr="input-attr">'
+        );
+    });
+    
+    it('should apply global mixin to matching tag names array', function(){
+        
+        function myattr() {
+            assert(this instanceof nant.Tag)
+            return this.mixin({ myattr: this.name + '-attr'});
+        }
+        
+        nant.mixin( ['div', 'input'], myattr )
+        
+        assert.equal(
+            
+            ht.div( ht.input().myattr() ).myattr(),
+            
+            '<div myattr="div-attr"><input myattr="input-attr"></div>'
+        );
+    });
+    
+    it('should apply global mixin to matching tag function', function(){
+        
+        function myattr() {
+            assert(this instanceof nant.Tag)
+            return this.mixin({ myattr: this.name + '-attr'});
+        }
+        
+        nant.mixin(function(tag) {
+            return tag.name === 'input';
+        }, myattr, 'newAttr' )
+        
+        assert.equal(
+            
+            ht.input({ name: 'myinput' }).newAttr().toString(),
+            
+            '<input name="myinput" myattr="input-attr">'
+        );
+    });
 });
