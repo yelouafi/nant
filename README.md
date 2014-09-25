@@ -124,14 +124,22 @@ ht.input({ class: ['class1', 'class2'] })
 <input class="class1 class2">
 ```
 
-
-class can also be a conditional object, only members with a truthy value will be picked
+or a conditional object, only members with a truthy value will be picked
 
 ```javascript
-ht.input({ class: { class1: true, class2: 1 > 2 })
+ht.input({ class: { class1: 1 < 2, class2: 1 > 2 })
 ```
 ```html
 <input class="class1">
+```
+
+you may also use array of both string/conditional object
+
+```javascript
+ht.input({ class: [ 'myclass',  { class1: 1 < 2, class2: 1 > 2 } ])
+```
+```html
+<input class="myclass class1">
 ```
 ------------------------------------------------------------------------------------------
 ###Object attributes (aka angular/knockout/... users)
@@ -212,7 +220,6 @@ bt.horzForm = function horzForm() {
 bt.formGroup = function formGroup(input, label) {
     return ht.div({ class: 'form-group' },
         label,
-        // css classes can also be passed as conditional object { class1: condition, class2: condition, ...}
         ht.div({ class: { 'col-sm-10': true, 'col-sm-offset-2': !label }}, input )
     )
 }
