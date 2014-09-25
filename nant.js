@@ -45,23 +45,13 @@ function exports() {
     Tag.prototype.toString = function() {
         var self = this;
         var attrArr = [''];
-        var aCls = self.attrs.class;
-        if (aCls) {
-            if(Array.isArray(aCls)) {
-                self.attrs.class = aCls.join(' ') ;    
-            } else if( typeof aCls === 'object') {
-                var clsArr = [];
-                for(var clsName in aCls) {
-                    if(aCls[clsName]) {
-                        clsArr.push(clsName);
-                    }
-                }
-                self.attrs.class = clsArr.join(' ') ;
-            }
-            
-        }
         for (var k in self.attrs) {
-            var val = getAttr( self.attrs[k] );
+            var val = false;
+            if( k === 'class' ) {
+                val = getClassAttr(self.attrs.class);
+            } else {
+                val = getAttr( self.attrs[k] );
+            }
             var normK = ccToUnd(k);
             if(val === true ) {
                 attrArr.push( normK );
@@ -69,10 +59,33 @@ function exports() {
                 val = val.toString();
                 var qs = val.indexOf('"') !== 0 ? '"' : '';
                 attrArr.push( normK + '=' + qs + val + qs );        
-            }
+            }   
+            
         }
         
         return '<' + self.name + attrArr.join(' ') + '>' + ( !self.isVoid ? getBody(self.body) + '</' + self.name + '>' : '') ;
+        
+        function getClassAttr(aCls) {
+            var ret = aCls;
+            if (aCls) {
+                if(Array.isArray(aCls)) {
+                    var strArr = [];
+                    for (var i = 0; i < aCls.length; i++) {
+                        strArr.push( getClassAttr(aCls[i], true) );
+                    }
+                   ret = strArr.join(' ');
+                } else if( typeof aCls === 'object') {
+                    var clsArr = [];
+                    for(var clsName in aCls) {
+                        if(aCls[clsName]) {
+                            clsArr.push(clsName);
+                        }
+                    }
+                    ret = clsArr.join(' ') ;
+                }
+            }
+            return ret || false;
+        }
         
         function getAttr(val, nested) {
             if( val === null || val === undefined || val === false ) {

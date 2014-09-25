@@ -10,7 +10,38 @@ describe('attributes', function(){
             '<div str-attr="strAttr" num-attr="1" true-attr></div>'
         );
     });
-
+    
+    it('should build class attribute from strings', function(){
+       
+        assert.equal(
+            ht.div({ class: 'myclass' }).toString(),
+            '<div class="myclass"></div>'
+        );
+    });
+    
+    it('should build class attribute from arrays', function(){
+       
+        assert.equal(
+            ht.div({ class: ['myclass1', 'myclass2'] }).toString(),
+            '<div class="myclass1 myclass2"></div>'
+        );
+    });
+    
+    it('should build class attribute from conditional objects', function(){
+       
+        assert.equal(
+            ht.div({ class: { myclass1: 1 === 1, myclass2: 1 !== 1 } }).toString(),
+            '<div class="myclass1"></div>'
+        );
+    });
+    
+    it('should build class attribute from array of string and/or objects', function(){
+       
+        assert.equal(
+            ht.div({ class: [ 'myclass', { myclass1: 1 === 1, myclass2: 1 !== 1 } ] }).toString(),
+            '<div class="myclass myclass1"></div>'
+        );
+    });
 
 
     it('should build attributes from objects', function(){
