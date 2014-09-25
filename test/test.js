@@ -1,35 +1,34 @@
 var assert = require("assert")
 var nant = require("../nant"), ht = nant.ht;
 
-describe('nant', function(){
-    describe('attributes', function(){
-        it('should build attributes from primitives (number, string, null, undefined, true, false)', function(){
-           
-            assert.equal(
-                ht.div({ strAttr: 'strAttr', numAttr: 1, trueAttr: true, falseAttr: false, nullAttr: null, undefAttr: undefined }).toString(),
-                '<div str-attr="strAttr" num-attr="1" true-attr></div>'
-            );
-        });
-    });
+describe('attributes', function(){
     
-    describe('attributes', function(){
-        it('should build attributes from objects', function(){
-           
-            assert.equal(
-                ht.div({ objAttr: { strAttr: 'strAttr', numAttr: 1, nested: { nestedStr: 'nest\'edStr', nestedNum: 1 } } }).toString(),
-                '<div obj-attr="{strAttr: \'strAttr\', numAttr: 1, nested: {nestedStr: \'nest\\\'edStr\', nestedNum: 1}}"></div>'
-            );
-        });
+    it('should build attributes from primitives (number, string, null, undefined, true, false)', function(){
+       
+        assert.equal(
+            ht.div({ strAttr: 'strAttr', numAttr: 1, trueAttr: true, falseAttr: false, nullAttr: null, undefAttr: undefined }).toString(),
+            '<div str-attr="strAttr" num-attr="1" true-attr></div>'
+        );
     });
-    
-    describe('attributes', function(){
-        it('should let nested props of object attributes unquoted', function(){
-           
-            assert.equal(
-                ht.div({ objAttr: { strAttr: 'strAttr', uqAttr: nant.uq('exp1===true'), nested: { nestedStr: 'nest\'edStr', nestedUq: nant.uq('exp2 > 0') } } }).toString(),
-                '<div obj-attr="{strAttr: \'strAttr\', uqAttr: exp1===true, nested: {nestedStr: \'nest\\\'edStr\', nestedUq: exp2 > 0}}"></div>'
-            );
-        });
+
+
+
+    it('should build attributes from objects', function(){
+       
+        assert.equal(
+            ht.div({ objAttr: { strAttr: 'strAttr', numAttr: 1, nested: { nestedStr: 'nest\'edStr', nestedNum: 1 } } }).toString(),
+            '<div obj-attr="{strAttr: \'strAttr\', numAttr: 1, nested: {nestedStr: \'nest\\\'edStr\', nestedNum: 1}}"></div>'
+        );
+    });
+
+
+
+    it('should let nested props of object attributes unquoted', function(){
+       
+        assert.equal(
+            ht.div({ objAttr: { strAttr: 'strAttr', uqAttr: nant.uq('exp1===true'), nested: { nestedStr: 'nest\'edStr', nestedUq: nant.uq('exp2 > 0') } } }).toString(),
+            '<div obj-attr="{strAttr: \'strAttr\', uqAttr: exp1===true, nested: {nestedStr: \'nest\\\'edStr\', nestedUq: exp2 > 0}}"></div>'
+        );
     });
 });
     
@@ -113,6 +112,17 @@ describe('html', function(){
             '</form>'
         );
     });
+});
+
+describe('mixins', function() {
+    
+    it('should not do anything if given an empty mixin', function () {
+        assert.doesNotThrow(
+            function() {
+                ht.div().mixin();
+            }
+        );
+    });
     
     it('should apply attributes mixin when passed an attributes param', function(){
     
@@ -142,4 +152,4 @@ describe('html', function(){
             '<input id="myinput" name="myinput" class="my-input-class">'
         );
     });
-  });
+});
