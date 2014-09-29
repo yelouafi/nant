@@ -64,7 +64,7 @@ describe('attributes', function(){
         assert.ok( div.hasClass('class1') );             // true
         assert.ok( !div.hasClass('class2') );             // false
         assert.ok( div.hasClass('myclass class1') );     // true
-        assert.ok( !div.hasClass('myclass class2') );     // false
+        assert.ok( !div.hasClass(['myclass', 'class2']) );     // false
     });
     
     it('should be able to toggle on/off css classes', function(){

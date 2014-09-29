@@ -47,11 +47,13 @@ Just add `nant.js` to your includes.
 	</body>
 </html>
 ```
--------------------------------------------------------------------------------------------
-So what's this ?
-================
 
-Obviuosly, this is not a new templating language for javascript; **javascript is the templating language**.
+-------------------------------------------------------------------------------------------
+
+So what's this ? A new Templating Language ?
+=============================================
+
+Obviuosly no; Instead **javascript is the templating language**.
 
 Html tags are exposed as functions in the `ht` namespace and tag attributes are passed as arguments.
 
@@ -149,7 +151,9 @@ ht.input({ class: [ 'myclass',  { class1: 1 < 2, class2: 1 > 2 } ])
 ```html
 <input class="myclass class1">
 ```
+
 ------------------------------------------------------------------------------------------
+
 ###Tag manipulation
 
 all methods of the `ht` namespace returns an objet of type `Tag`; 
@@ -198,7 +202,7 @@ div.hasClass('myclass');            // true
 div.hasClass('class1');             // true
 div.hasClass('class2');             // false
 div.hasClass('myclass class1');     // true
-div.hasClass('myclass class2');     // false
+div.hasClass(['myclass', 'class2']);     // false
 ```
 
 **`.toggleClass()`** is another familiar method to to toggle on/off css class references
@@ -206,14 +210,22 @@ div.hasClass('myclass class2');     // false
 ```javascript
 var div = ht.input({ name: 'myinput', class: ['myclass',  { class1: 1 === 1, class2: 1 !== 1} ] });
 
-div.toggleClass('myclass');                 // div.hasClass('myclass') == false
-div.toggleClass('class2', true);            // div.hasClass('class2') == true
-div.toggleClass('class1', true);            // nothing changes as class1 is already enabled
-div.toggleClass(['myclass', 'class2']);    // div.hasClass('myclass') == true && div.hasClass('class2') == false
+div.toggleClass('myclass');                 
+// div.hasClass('myclass') == false
+
+div.toggleClass('class2', true);            
+// div.hasClass('class2') == true
+
+div.toggleClass('class1', true);           
+// nothing changes as class1 is already enabled
+
+div.toggleClass(['myclass', 'class2']);    
+// div.hasClass('myclass') == true && div.hasClass('class2') == false
 ```
 
+------------------------------------------------------------------------------------------------------------------------
+
 ###Mixins
-=========
 
 Mixins allows you to add custom methods to selected tags
 
@@ -291,6 +303,28 @@ instead use `nant.uq(expr)` to build an unquoted expression
 ht.p({ ngClass: {strike: nant.uq('!deleted'), bold: nant.uq('some.isBold()') } })
 ```
 
+-----------------------------------------------------------------------------------------------
+
+###Defining Custom Tags
+=======================
+
+Simply, use `nant.makeTag` to make a tag builder function
+
+```javascript
+// It's better to define custom tags in their own namespace
+var ns = nant.ns = {};
+// define your custom element inside the namespace
+ns.myElement = nant.makeTag('MyElement', isVoid)
+
+//Later you can use your tag function
+var myHtml = ht.div(
+    ns.myElement({ ...}, body )
+)
+```
+
+If `isVoid` parameter is true, then any body provided to the tag function will be ignored and closing tag (`</myelement>`) will not be generated upon tag stringification
+
+
 ---------------------------------------------------------------------------------------------
 
 Tutorial: Bootstrap forms
@@ -342,10 +376,6 @@ var myHtml = bt.horzForm(
 )
 ```
 
---------------------------------------------------------------------------------------
-
-Mixins
-======
 
 Lets review the last example, w've reusable bootstrap tags to build form elements. 
 
@@ -353,9 +383,6 @@ You may have noted that the grid's columns layout (all those `col-sm-*` classes)
 
 What if we want to move layout defintion (`col-sm-*` classes) outside ? we can make changes on form layout once and then apply it to all our form template.
 
-Response is `Mixins`. a mixin allows us to apply transformations to a prebuilt Tag.
-
-So we can rewrite the bootstrap form example as follow
 
 ```javascript
 // Form layout definition
@@ -367,7 +394,7 @@ var layout = {
 
 // Form group apply layout def to its input and label
 bt.formGroup = function formGroup(input, label) {
-    input = ht.div(input).mixin(layout.input);
+    input = ht.div(input).attr(layout.input);
     if(label) {
         label = label.attr(layout.label);
     } else {
@@ -430,53 +457,3 @@ var myHtml = bt.horzForm(
 ```
 
 You can go ever further to acheive better reusability; Because you're in the javascript land, you can apply your favourite desgin patterns.
-
-Above w've seen **attribute mixins**. They are quite simple to use, you pass in an attribute definition; the `mixin` function extendsthe tag's attributes with the new ones.
-
-Well there is also **function mixins**: you can provide the `mixin` method with your own function; it will be called then with tag object as parameter.
-
-
-```javascript
-function myMixin(tag) {
-    // do something cool ...
-    // don't forget to return
-    return tag;
-}
-
-ht.div(/* ... */).mixin( myMixin );
-```
-
-so basically, the mixin function take a tag parameter, applies whatever transformations to it and then return :
-
-- either the same tag (generally when transformations are limited to attributes manipulation)
-- or even another new constructed tag (for example wrap an `input` tag with a `div`)
-
-There is no limit of what you can do with function mixins just beware to always return a meaningful value (generally this will be a `Tag` object)
-
----------------------------------------------------------------------------------
-
-Custom Tags
-===========
-
-All exemples above simply define custom functions that return well known html tags; but you can also define your own custom tags that follows the html syntax rules. This maybe even necessary if you're working with some third party lib that requires custom tags (like `angularjs`).
-
-Use `nant.makeTag` to make a tag builder function
-
-```javascript
-// define your namespace
-var ns = nant.ns = {};
-// define your custom element inside the namespace
-ns.myElement = nant.makeTag('MyElement', isVoid)
-
-//Later you can use your tag function
-var myHtml = ht.div(
-    ns.myElement({ ...}, body )
-)
-```
-If `isVoid` parameter is true, then any body provided to the tag function will be ignored and closing tag (`</myelement>`) will not be generated upon tag stringification
-
-
-
-
-
-
