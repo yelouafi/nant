@@ -234,6 +234,9 @@ function exports() {
         }
         
         function match(selector, tag) {
+            if(selector === '*') {
+                return true;
+            }
             if( typeof selector === 'string' ) {
                 return selector === tag.name;
             } else if( typeof selector === 'function' ) {

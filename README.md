@@ -255,9 +255,41 @@ the exact signature of the `nant.mixin()` method is
 
 with
 
-- `selector`: either tag name (or an array of tag names) the mixin method will be attached to; or a function predicated (will be provided the `Tag` object and must return true/false to include the tag in the selection)
+- `selector`: either :
+    - tag name: ie 'input' -> mixin method will be attached to all <input/> tags; a wildcard '*' will match all tags
+    - an array of tag names: mixin will be attached to all tags with provided names
+    - function predicate (will be provided the `Tag` object and must return true/false to include the tag in the selection)
 - `mixinFn`: the mixin method to be attached; `this` will be set to the `Tag` instance
 - `mixinName` : Optional, the method's name will be as tag's member, defaults to the name of `mixinFn` (so beware to provide a name if `mixinFn` is an anonymous function)
+
+examples 
+
+```javascript
+function dataModel() { ... }
+
+// define 'dataModel' methods on all <input/> and <select/> tags
+nant.mixin( ['input', 'select'], dataModel );
+```
+
+```javascript
+function tagName(name) { 
+    this.attr('name', name);
+}
+
+// define 'name' method on all tags
+nant.mixin( '*', tagName, 'name' );
+```
+
+```javascript
+function cols(cols) { 
+    this.attr({ class: 'col-sm-'+cols);
+}
+
+// define 'cols' method on all div tags with class 'form-group'
+nant.mixin( function(tag) {
+    return tag.name === 'div' && tag.hasClass('form-group');
+}, cols );
+```
 
 
 ------------------------------------------------------------------------------------------
