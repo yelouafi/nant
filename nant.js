@@ -5,14 +5,37 @@ function exports() {
             return "-" + $1.toLowerCase();
         });
     }
+    function getClass(aCls) {
+        var clsArr = [];
+        if(Array.isArray(aCls)) {
+            for (var i = 0; i < aCls.length; i++) {
+                var cls =  getClass(aCls[i]);
+                if(cls) {
+                    clsArr = clsArr.concat(cls);
+                }
+            }
+        } else if( typeof aCls === 'object') {
+            for(var clsName in aCls) {
+                if(aCls[clsName]) {
+                    clsArr.push(clsName);
+                }
+            }
+            return clsArr;
+        } else if(aCls && typeof aCls === 'string') {
+            clsArr = aCls.match(/\S+/g);
+        }
+        for (var i = 0; i < clsArr.length; i++) {
+            clsArr[i] = clsArr[i].trim().toLowerCase();
+        }
+        return clsArr.length ? clsArr : null;
+    }
+    
     nant.extend = function (base, extended) {
         base = base || {}; extended = extended || {};
-        var eCls = extended.class;
+        var eCls = getClass(extended.class);
         if(eCls) {
-            eCls = Array.isArray(extended.class) ? extended.class: [extended.class];
             base.class = base.class || [];
-            var bCls = Array.isArray(base.class) ? base.class : [base.class];
-            base.class = bCls.concat(eCls);
+            base.class = base.class.concat(eCls);
         }
         
         for (var k in extended) {
@@ -22,6 +45,7 @@ function exports() {
         }
         return base;
     }
+    
     function Uq(str) {
         this.str = str;
     }
@@ -30,25 +54,77 @@ function exports() {
     }
     function Tag(tag) {
         this.name = tag.name;
-        this.attrs = tag.attrs;
+        this.attrs = { class: []};
+        nant.extend(this.attrs, tag.attrs);
         this.body = tag.body;
         this.isVoid = tag.isVoid;
     }
-    Tag.prototype.mixin = function(mixin) {
-        if(typeof mixin === 'function') {
-            return mixin(this);
-        } else {
-            nant.extend(this.attrs, mixin);
+    Tag.prototype.attr = function(attr, val) {
+        if(val === undefined) {
+            if(typeof attr === 'string') {
+                return this.attrs[attr];
+            } else if(Array.isArray(attr) ) {
+                var ret = {};
+                for (var i = 0; i < attr.length; i++) {
+                    var attrName = attr[i];
+                    ret[attrName] = this.attrs[attrName];
+                }
+                return ret;
+            } else if( typeof attr === 'object') {
+                nant.extend(this.attrs, attr);
+                return this;
+            }
+        } else if(typeof attr === 'string') {
+            var obj = {};
+            obj[attr] = val;
+            nant.extend(this.attrs, obj);
             return this;
         }
+        
     }
+    Tag.prototype.hasClass = function(className) {
+        var classes = Array.isArray(className) ? 
+                        className : ( typeof className === 'string' ? className.match(/\S+/g) : [] )
+        
+        for (var i = 0; i < classes.length; i++) {
+           if(  this.attrs.class.indexOf( classes[i].toLowerCase() ) < 0 ) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    Tag.prototype.toggleClass = function(className, toggle) {
+        var classes = Array.isArray(className) ? 
+                        className : ( typeof className === 'string' ? className.match(/\S+/g) : [] )
+        
+        for (var i = 0; i < classes.length; i++) {
+            var cn = classes[i];
+            var ind = this.attrs.class.indexOf(cn);
+            console.log('indexOf ',cn, ' ', ind)
+            var on = toggle !== undefined ? toggle : (ind < 0);
+            if(on) {
+                if(ind < 0) {
+                    this.attrs.class.push(cn);
+                }
+            } else {
+                if(ind >= 0) {
+                    this.attrs.class.splice(ind, 1);
+                } 
+            }
+        }
+        return true;
+    }
+    
+        
     Tag.prototype.toString = function() {
         var self = this;
         var attrArr = [''];
         for (var k in self.attrs) {
             var val = false;
             if( k === 'class' ) {
-                val = getClassAttr(self.attrs.class);
+                var ca = self.attrs.class.join(' ');
+                val = ca ? ca : false;
             } else {
                 val = getAttr( self.attrs[k] );
             }
@@ -64,28 +140,6 @@ function exports() {
         }
         
         return '<' + self.name + attrArr.join(' ') + '>' + ( !self.isVoid ? getBody(self.body) + '</' + self.name + '>' : '') ;
-        
-        function getClassAttr(aCls) {
-            var ret = aCls;
-            if (aCls) {
-                if(Array.isArray(aCls)) {
-                    var strArr = [];
-                    for (var i = 0; i < aCls.length; i++) {
-                        strArr.push( getClassAttr(aCls[i], true) );
-                    }
-                   ret = strArr.join(' ');
-                } else if( typeof aCls === 'object') {
-                    var clsArr = [];
-                    for(var clsName in aCls) {
-                        if(aCls[clsName]) {
-                            clsArr.push(clsName);
-                        }
-                    }
-                    ret = clsArr.join(' ') ;
-                }
-            }
-            return ret || false;
-        }
         
         function getAttr(val, nested) {
             if( val === null || val === undefined || val === false ) {

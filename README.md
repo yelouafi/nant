@@ -4,8 +4,9 @@ Features
 ========
 
 - No need to learn another language, it's plain javascript
+- Tags are simple POJOs (Plain Old *Javascript* Object) and can be manipulated with ease before stringification
 - Uses all language constructs to define your reusable building blocks
-- Mixins to separate UI concernes (styles, layout..)
+- Mixins allows defining custom methods in selected Tags
 
 Get started
 ===========
@@ -21,8 +22,9 @@ npm install nant
 Then use it
 
 ```javascript
+// get the Html Templates namespace
 var ht = require('nant').ht;
-var html = ht.p('this is as easy as writing javascript code');
+var html = ht.p('this is as easy as writing javascript code').toString();
 ```
 
 ###On the Browser :
@@ -40,7 +42,7 @@ Just add `nant.js` to your includes.
 		<script>
 			var el = document.getElementById('placeholder');
 			var ht = nant.ht;
-			el.innerHTML = ht.p('this is as easy as writing javascript code'); 
+			el.innerHTML = ht.p('this is as easy as writing javascript code').toString(); 
 		</script>
 	</body>
 </html>
@@ -51,16 +53,12 @@ So what's this ?
 
 Obviuosly, this is not a new templating language for javascript; **javascript is the templating language**.
 
-Html tags are exposed as functions. you simply use the appropriate tag name to build your template. 
-
-Tag attributes are passed as arguments.
+Html tags are exposed as functions in the `ht` namespace and tag attributes are passed as arguments.
 
 ```javascript
-ht.input({ type: 'text', name: 'myinput', required: 'true'});
+var html = ht.input({ type: 'text', name: 'myinput', required: 'true'}).toString();
+console.log( html );
 ```
-
-this will become
-
 ```html
 <input type="text" name="myinput" required>
 ```
@@ -68,18 +66,28 @@ this will become
 Tag body is passed as an optional argument
 
 ```javascript
-ht.div({ id: 'myid', class: 'myclass' }, 'String body');
+var html = ht.div({ id: 'myid', class: 'myclass' }, 'String body').toString();
+console.log( html );
+```
+```html
+<div class="myclass" id="myid" required>
+    String body
+</div>
 ```
 
-You can pass nested tags as body
+You can pass nested tags as body (**you don'need to call `toString()` on nested tags**)
 
 ```javascript
-ht.form({ id: 'myform', class: 'myclass' }, 
-    ht.input({ name: 'myinput' })
-);
+ht.form({ id: 'myform', class: 'myclass' },
+    ht.div(
+        ht.label('My Input'),
+        ht.input({ name: 'myinput', placeholder: 'My Input' })
+    )
+).toString();
 ```
 
 If you pass a function as body, it will be called upon rendering (with the tag as parameter)
+
 ```javascript
 function myBody(tag) {
     return ht.p('Hello to ' + tag.name);
@@ -87,7 +95,7 @@ function myBody(tag) {
 
 ht.form({ id: 'myform', class: 'myclass' }, 
     myBody
-);
+).toString();
 ```
 
 if you need to embody multiples tags, simply list them in order
@@ -98,7 +106,7 @@ ht.form({ id: 'myform', class: 'myclass' },
     ht.input({ id:'myinput', name: 'myinput' }),
     'Help text',
     someFunction
-);
+).toString();
 ```
 
 You can also group body tags in arrays
@@ -111,7 +119,7 @@ ht.form({ id: 'myform', class: 'myclass' },
         ht.input({ id:'myinput', name: 'myinput' })
     ],
     ht.button('Submit')
-);
+).toString();
 ```
 
 
@@ -141,6 +149,105 @@ ht.input({ class: [ 'myclass',  { class1: 1 < 2, class2: 1 > 2 } ])
 ```html
 <input class="myclass class1">
 ```
+------------------------------------------------------------------------------------------
+###Tag manipulation
+
+all methods of the `ht` namespace returns an objet of type `Tag`; 
+
+the `Tag`'s prototype exposes a few methods; this is useful if you want to manipulate the tag object before calling `.toString()`
+
+**`.attr()`** allows you to get/set current attribute value
+
+```javascript
+var div = ht.input({ name: 'myinput', class: 'myclass' });
+
+div.attr('name'); // 'myinput'
+div.attr('class'); // ['myclass']
+div.attr('name', 'newName'); // set 'name' attribute
+```
+
+note how class attribute was converted to an Array; internally all tags maintains an `Array` instance for `class` attribute
+
+
+the `.attr()` method can be passed an array of attribute names
+
+```javascript
+var div = ht.input({ id:'myid', name: 'myname', placeholder: 'My Input' });
+
+div.attr(['id', 'name']); // { id:'myid', name: 'myname' }
+```
+
+and if you pass it an object, all tag's attributes will be extended with object's members
+
+```javascript
+var div = ht.input({ name: 'myinput', class: 'myclass' });
+
+div.attr({ id: 'myid', class: 'class1' });
+
+div.attr('id'); // 'myid'
+
+div.attr('class'); // ['myclass', 'class1']
+```
+
+**`.hasClass()`** can be used to check if tag instance references a css class
+
+```javascript
+var div = ht.input({ name: 'myinput', class: ['myclass',  { class1: 1 === 1, class2: 1 !== 1} ] });
+
+div.hasClass('myclass');            // true
+div.hasClass('class1');             // true
+div.hasClass('class2');             // false
+div.hasClass('myclass class1');     // true
+div.hasClass('myclass class2');     // false
+```
+
+**`.toggleClass()`** is another familiar method to to toggle on/off css class references
+
+```javascript
+var div = ht.input({ name: 'myinput', class: ['myclass',  { class1: 1 === 1, class2: 1 !== 1} ] });
+
+div.toggleClass('myclass');                 // div.hasClass('myclass') == false
+div.toggleClass('class2', true);            // div.hasClass('class2') == true
+div.toggleClass('class1', true);            // nothing changes as class1 is already enabled
+div.toggleClass(['myclass', 'class2']);    // div.hasClass('myclass') == true && div.hasClass('class2') == false
+```
+
+###Mixins
+=========
+
+Mixins allows you to add custom methods to selected tags
+
+for example, suppose you have a `data-model` attribute you want to apply to all input tags
+
+```javascript
+//First you define you mixin function
+function dataModel(model) {
+    return this.attr({ dataModel: model });
+}
+
+// Then you attach it to all <input/> tags
+nant.mixin( 'input', dataModel );
+```
+
+therefore you can call `input` tags with the `dataModel` method
+```javascript
+ht.input({ name: 'myinput' }).dataModel('mymodel');
+```
+```html
+<input name="myinput" data-model="mymodel">
+```
+
+the exact signature of the `nant.mixin()` method is
+
+`nant.mixin( selector, mixinFn, [mixinName] )`
+
+with
+
+- `selector`: either tag name (or an array of tag names) the mixin method will be attached to
+- `mixinFn`: the mixin method to be attached; `this` will be set to the `Tag` instance
+- `mixinName` : Optional, the method's name will be as tag's member, defaults to the name of `mixinFn` (so beware to provide a name if `mixinFn` is an anonymous function)
+
+
 ------------------------------------------------------------------------------------------
 ###Object attributes (aka angular/knockout/... users)
 
@@ -262,9 +369,9 @@ var layout = {
 bt.formGroup = function formGroup(input, label) {
     input = ht.div(input).mixin(layout.input);
     if(label) {
-        label = label.mixin(layout.label);
+        label = label.attr(layout.label);
     } else {
-        input = input.mixin(layout.offset);
+        input = input.attr(layout.offset);
     }
     return ht.div({ class: 'form-group' },
         label, input
@@ -302,9 +409,9 @@ var layout = new BtFormLayout([2,10], 'sm');
 bt.formGroup = function formGroup(input, label, layout) {
     input = ht.div(input).mixin(layout.input);
     if(label) {
-        label = label.mixin(layout.label);
+        label = label.attr(layout.label);
     } else {
-        input = input.mixin(layout.offset);
+        input = input.attr(layout.offset);
     }
     return ht.div({ class: 'form-group' },
         label, input

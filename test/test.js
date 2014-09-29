@@ -3,23 +3,93 @@ var nant = require("../nant"), ht = nant.ht;
 
 describe('attributes', function(){
     
-    it('should build attributes from primitives (number, string, null, undefined, true, false)', function(){
-       
+    it('should return scalar attribute value', function () {
+        var tag = ht.div({ id: 'mydiv' })
         assert.equal(
-            ht.div({ strAttr: 'strAttr', numAttr: 1, trueAttr: true, falseAttr: false, nullAttr: null, undefAttr: undefined }).toString(),
-            '<div str-attr="strAttr" num-attr="1" true-attr></div>'
+            tag.attr('id'),
+            'mydiv'
         );
     });
     
-    it('should build class attribute from strings', function(){
-       
-        assert.equal(
-            ht.div({ class: 'myclass' }).toString(),
-            '<div class="myclass"></div>'
+    it('should return array of attributes values', function(){
+    
+        var tag = ht.input({ id: 'myid', name: 'myname' })
+        assert.deepEqual(
+            tag.attr(['id', 'name']),
+            { id: 'myid', name: 'myname' }
         );
     });
     
-    it('should build class attribute from arrays', function(){
+    it('should build array class attribute from strings', function(){
+        var div = ht.div({ class: 'myclass' });
+        assert.deepEqual(
+            div.attrs.class,
+            ['myclass']
+        );
+        
+        div = ht.div({ class: 'myclass1 myclass2 ' });
+        assert.deepEqual(
+            div.attrs.class,
+            ['myclass1', 'myclass2']
+        );
+    });
+    
+    it('should build array class attribute from arrays', function(){
+        var div = ht.div({ class: ['myclass1', 'myclass2'] });
+        assert.deepEqual(
+            div.attrs.class,
+            ['myclass1', 'myclass2']
+        );
+    });
+    
+    it('should build array class attribute from arrays/objects', function(){
+        var div = ht.div({ class: [ 'myclass', { myclass1: 1 === 1, myclass2: 1 !== 1 } ] })
+        assert.deepEqual(
+            div.attrs.class,
+            ['myclass', 'myclass1']
+        );
+    });
+    
+    it('should build array class attribute from arrays/objects', function(){
+        var div = ht.div({ class: [ 'myclass', { myclass1: 1 === 1, myclass2: 1 !== 1 } ] })
+        assert.ok( div.hasClass('myclass1') );
+        assert.ok( div.hasClass('myclass myclass1') );
+        assert.ok( !div.hasClass('myclass2') );
+    });
+    
+    it('should be able to tell if a tag references a css class', function(){
+        var div = ht.input({ name: 'myinput', class: ['myclass',  { class1: 1 === 1, class2: 1 !== 1} ] });
+
+        assert.ok( div.hasClass('myclass') );            // true
+        assert.ok( div.hasClass('class1') );             // true
+        assert.ok( !div.hasClass('class2') );             // false
+        assert.ok( div.hasClass('myclass class1') );     // true
+        assert.ok( !div.hasClass('myclass class2') );     // false
+    });
+    
+    it('should be able to toggle on/off css classes', function(){
+        var div = ht.input({ name: 'myinput', class: ['myclass',  { class1: 1 === 1, class2: 1 !== 1} ] });
+
+        div.toggleClass('myclass');
+        assert.ok( !div.hasClass('myclass') );
+        
+        div.toggleClass('class2', true);
+        assert.ok( div.hasClass('class2') );
+        
+        div.toggleClass('class1', true);
+        assert.ok( div.hasClass('class1') );
+        
+        div.toggleClass(['myclass', 'class2']);
+        assert.ok( div.hasClass('myclass') );
+        assert.ok( !div.hasClass('class2') );
+    });
+    
+    
+});
+    
+describe('html', function(){
+    
+    it('should build html with class attribute from arrays', function(){
        
         assert.equal(
             ht.div({ class: ['myclass1', 'myclass2'] }).toString(),
@@ -27,7 +97,7 @@ describe('attributes', function(){
         );
     });
     
-    it('should build class attribute from conditional objects', function(){
+    it('should build html with class attribute from conditional objects', function(){
        
         assert.equal(
             ht.div({ class: { myclass1: 1 === 1, myclass2: 1 !== 1 } }).toString(),
@@ -35,16 +105,23 @@ describe('attributes', function(){
         );
     });
     
-    it('should build class attribute from array of string and/or objects', function(){
+    it('should build html with class attribute from array of string and/or objects', function(){
        
         assert.equal(
             ht.div({ class: [ 'myclass', { myclass1: 1 === 1, myclass2: 1 !== 1 } ] }).toString(),
             '<div class="myclass myclass1"></div>'
         );
     });
+    
+    it('should build html with attributes from primitives (number, string, null, undefined, true, false)', function(){
+       
+        assert.equal(
+            ht.div({ strAttr: 'strAttr', numAttr: 1, trueAttr: true, falseAttr: false, nullAttr: null, undefAttr: undefined }).toString(),
+            '<div str-attr="strAttr" num-attr="1" true-attr></div>'
+        );
+    });
 
-
-    it('should build attributes from objects', function(){
+    it('should build html with attributes from objects', function(){
        
         assert.equal(
             ht.div({ objAttr: { strAttr: 'strAttr', numAttr: 1, nested: { nestedStr: 'nest\'edStr', nestedNum: 1 } } }).toString(),
@@ -54,16 +131,14 @@ describe('attributes', function(){
 
 
 
-    it('should let nested props of object attributes unquoted', function(){
+    it('should build html and let nested props of object attributes unquoted', function(){
        
         assert.equal(
             ht.div({ objAttr: { strAttr: 'strAttr', uqAttr: nant.uq('exp1===true'), nested: { nestedStr: 'nest\'edStr', nestedUq: nant.uq('exp2 > 0') } } }).toString(),
             '<div obj-attr="{strAttr: \'strAttr\', uqAttr: exp1===true, nested: {nestedStr: \'nest\\\'edStr\', nestedUq: exp2 > 0}}"></div>'
         );
     });
-});
     
-describe('html', function(){
     it('should build html tag with body', function(){
        
         assert.equal(
@@ -85,7 +160,7 @@ describe('html', function(){
                 ht.input({ id:'myinput', name: 'myinput' })
             ).toString(),
             
-            '<form id="myform" class="myclass">' +
+            '<form class="myclass" id="myform">' +
                 '<label for="myinput">My input</label>' +
                 '<input id="myinput" name="myinput">' +
             '</form>'
@@ -101,7 +176,7 @@ describe('html', function(){
                 ht.input({ id:'myinput', name: 'myinput' })
             ]).toString(),
             
-            '<form id="myform" class="myclass">' +
+            '<form class="myclass" id="myform">' +
                 '<label for="myinput">My input</label>' +
                 '<input id="myinput" name="myinput">' +
             '</form>'
@@ -117,7 +192,7 @@ describe('html', function(){
                 ht.input({ id:'myinput', name: 'myinput' })
             ).toString(),
             
-            '<form id="myform" class="myclass">' +
+            '<form class="myclass" id="myform">' +
                 '<label for="myinput">My input</label>' +
                 '<input id="myinput" name="myinput">' +
             '</form>'
@@ -136,7 +211,7 @@ describe('html', function(){
                 ht.button('Submit')
             ).toString(),
             
-            '<form id="myform" class="myclass">' +
+            '<form class="myclass" id="myform">' +
                 '<label for="myinput">My input</label>' +
                 '<input id="myinput" name="myinput">' +
                 '<button>Submit</button>' +
@@ -147,57 +222,32 @@ describe('html', function(){
 
 describe('mixins', function() {
     
-    it('should not do anything if given an empty mixin', function () {
-        assert.doesNotThrow(
-            function() {
-                ht.div().mixin();
-            }
-        );
-    });
-    
-    it('should apply attributes mixin when passed an attributes param', function(){
+    it('should apply attribute mixin', function(){
     
         assert.equal(
             
-            ht.input({ id:'myinput', name: 'myinput' })
-                .mixin({ class: 'my-input-class'})
+            ht.input({ id:'myinput' })
+                .attr({ name: 'myinput', class: 'myclass' })
                 .toString(),
             
-            '<input id="myinput" name="myinput" class="my-input-class">'
-        );
-    });
-    
-    it('should apply function mixin when passed a function param', function(){
-        
-        function applyClass(tag) {
-            nant.extend(tag.attrs, { class: 'my-input-class'});
-            return tag;
-        }
-    
-        assert.equal(
-            
-            ht.input({ id:'myinput', name: 'myinput' })
-                .mixin( applyClass )
-                .toString(),
-            
-            '<input id="myinput" name="myinput" class="my-input-class">'
+            '<input class="myclass" id="myinput" name="myinput">'
         );
     });
     
     it('should apply global mixin to matching tag name', function(){
         
-        function myattr() {
+        function myattr(val) {
             assert(this instanceof nant.Tag)
-            return this.mixin({ myattr: this.name + '-attr'});
+            return this.attr({ myattr: val });
         }
         
         nant.mixin( 'input', myattr )
         
         assert.equal(
             
-            ht.input({ name: 'myinput' }).myattr().toString(),
+            ht.input({ name: 'myinput' }).myattr('val').toString(),
             
-            '<input name="myinput" myattr="input-attr">'
+            '<input name="myinput" myattr="val">'
         );
     });
     
@@ -205,7 +255,7 @@ describe('mixins', function() {
         
         function myattr() {
             assert(this instanceof nant.Tag)
-            return this.mixin({ myattr: this.name + '-attr'});
+            return this.attr({ myattr: this.name + '-attr'});
         }
         
         nant.mixin( ['div', 'input'], myattr )
@@ -222,7 +272,7 @@ describe('mixins', function() {
         
         function myattr() {
             assert(this instanceof nant.Tag)
-            return this.mixin({ myattr: this.name + '-attr'});
+            return this.attr({ myattr: this.name + '-attr'});
         }
         
         nant.mixin(function(tag) {
