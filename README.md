@@ -255,7 +255,7 @@ the exact signature of the `nant.mixin()` method is
 
 with
 
-- `selector`: either tag name (or an array of tag names) the mixin method will be attached to
+- `selector`: either tag name (or an array of tag names) the mixin method will be attached to; or a function predicated (will be provided the `Tag` object and must return true/false to include the tag in the selection)
 - `mixinFn`: the mixin method to be attached; `this` will be set to the `Tag` instance
 - `mixinName` : Optional, the method's name will be as tag's member, defaults to the name of `mixinFn` (so beware to provide a name if `mixinFn` is an anonymous function)
 
