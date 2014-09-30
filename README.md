@@ -53,7 +53,7 @@ Just add `nant.js` to your includes.
 So what's this ? A new Templating Language ?
 =============================================
 
-Obviuosly no; Instead **javascript is the templating language**.
+Obviously no; Instead **javascript is the templating language**.
 
 Html tags are exposed as functions in the `ht` namespace and tag attributes are passed as arguments.
 
@@ -77,7 +77,7 @@ console.log( html );
 </div>
 ```
 
-You can pass nested tags as body (**you don'need to call `toString()` on nested tags**)
+You can pass nested tags as body (note you don'need to call `toString()` on nested tags**)
 
 ```javascript
 ht.form({ id: 'myform', class: 'myclass' },
@@ -88,7 +88,7 @@ ht.form({ id: 'myform', class: 'myclass' },
 ).toString();
 ```
 
-If you pass a function as body, it will be called upon rendering (with the tag as parameter)
+If you pass a function as body, it will be called upon rendering (with the parent tag as parameter)
 
 ```javascript
 function myBody(tag) {
@@ -154,46 +154,51 @@ ht.input({ class: [ 'myclass',  { class1: 1 < 2, class2: 1 > 2 } ])
 
 ------------------------------------------------------------------------------------------
 
-###Tag manipulation
+##Tag manipulation
 
 all methods of the `ht` namespace returns an objet of type `Tag`; 
 
 the `Tag`'s prototype exposes a few methods; this is useful if you want to manipulate the tag object before calling `.toString()`
 
-**`.attr()`** allows you to get/set current attribute value
+###.attr( attrName [, attrValue ] )
+
+get/set current attribute value
 
 ```javascript
 var div = ht.input({ name: 'myinput', class: 'myclass' });
 
-div.attr('name'); // 'myinput'
-div.attr('class'); // ['myclass']
-div.attr('name', 'newName'); // set 'name' attribute
+div.attr('name');               // 'myinput'
+div.attr('class');              // ['myclass']
+div.attr('name', 'newName');    // div.attr('name') === 'newName'
 ```
 
 note how class attribute was converted to an Array; internally all tags maintains an `Array` instance for `class` attribute
 
 
-the `.attr()` method can be passed an array of attribute names
+###.attr( [ attrName1, attrName2, ...] )
+
+When passed an array, returns an object with given attributes
 
 ```javascript
 var div = ht.input({ id:'myid', name: 'myname', placeholder: 'My Input' });
-
 div.attr(['id', 'name']); // { id:'myid', name: 'myname' }
 ```
 
-and if you pass it an object, all tag's attributes will be extended with object's members
+###.attr( object )
+
+if you pass it an object, tag's attributes will be extended with object's members
 
 ```javascript
 var div = ht.input({ name: 'myinput', class: 'myclass' });
 
 div.attr({ id: 'myid', class: 'class1' });
-
 div.attr('id'); // 'myid'
-
 div.attr('class'); // ['myclass', 'class1']
 ```
 
-**`.hasClass()`** can be used to check if tag instance references a css class
+###.hasClass()
+
+used to check if tag instance references a css class
 
 ```javascript
 var div = ht.input({ name: 'myinput', class: ['myclass',  { class1: 1 === 1, class2: 1 !== 1} ] });
@@ -205,7 +210,9 @@ div.hasClass('myclass class1');     // true
 div.hasClass(['myclass', 'class2']);     // false
 ```
 
-**`.toggleClass()`** is another familiar method to to toggle on/off css class references
+###.toggleClass()
+
+is another familiar method to to toggle on/off css class references
 
 ```javascript
 var div = ht.input({ name: 'myinput', class: ['myclass',  { class1: 1 === 1, class2: 1 !== 1} ] });
@@ -223,11 +230,48 @@ div.toggleClass(['myclass', 'class2']);
 // div.hasClass('myclass') == true && div.hasClass('class2') == false
 ```
 
+###.match( selector )
+
+Another useful method to check weather a tag matches the given selector; note only a small subset of css selectors is supported at the moment
+You can also supply a function (see example below) to perform tag matching
+
+exemple
+```javascript
+var divTag = ht.div({ id: 'mydiv', class: ['form', 'group', 'col'] });
+var inputTag = ht.input({ id: 'myinput', class: ['control', 'col'] });
+
+// tag name selectors
+divTag.match('div');                  // true
+inputTag.match('input');              // true
+divTag.match('div, input');           // true
+inputTag.match(['div', 'input']);     // true
+
+// class names, ids
+divTag.match('div.form');               // true
+divTag.match('div.form.group');         // true
+divTag.match('#mydiv');                 // true
+divTag.match('div#mydiv.form.col');     // true
+divTag.match('*.col');                  // true
+inputTag.match('*.col');                // true
+
+
+divTag.match( function(t) {  return t.name === 'div' } );
+```
+
+###.children( [ selector ] )
+
+returns all direct children of the current tag; if provided, selector will be used to filter out the result
+
+###.find( selector )
+
+returns all descendents (including non-direct children) matching the given selector
+
+
 ------------------------------------------------------------------------------------------------------------------------
 
 ###Mixins
 
-Mixins allows you to add custom methods to selected tags
+Mixins allows attaching custom methods to selected tags
 
 for example, suppose you have a `data-model` attribute you want to apply to all input tags
 
@@ -252,15 +296,6 @@ ht.input({ name: 'myinput' }).dataModel('mymodel');
 the exact signature of the `nant.mixin()` method is
 
 `nant.mixin( selector, mixinFn, [mixinName] )`
-
-with
-
-- `selector`: either :
-    - tag name: ie 'input' -> mixin method will be attached to all `input` tags; a wildcard '*' will match all tags
-    - an array of tag names: mixin will be attached to all tags with provided names
-    - function predicate (will be provided the `Tag` object and must return true/false to include the tag in the selection)
-- `mixinFn`: the mixin method to be attached; `this` will be set to the `Tag` instance
-- `mixinName` : Optional, the method's name will be as tag's member, defaults to the name of `mixinFn` (so beware to provide a name if `mixinFn` is an anonymous function)
 
 examples 
 

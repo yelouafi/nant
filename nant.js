@@ -29,7 +29,58 @@ function exports() {
         }
         return clsArr.length ? clsArr : null;
     }
-    
+    function getBody(tag, bodyConf) {
+        var body = [];
+        if( typeof bodyConf === 'string' || bodyConf instanceof Tag ) {
+            body.push( bodyConf );
+        } else if( Array.isArray(bodyConf) ) {
+            for (var i = 0; i < bodyConf.length; i++) {
+                body = body.concat( getBody(tag, bodyConf[i]) );
+            }
+        } else if(typeof bodyConf === 'function') {
+            body = body.concat( bodyConf(tag) );
+        } 
+        return body;
+    }
+    nant.match = function(selector, tag) {
+        if(! (tag instanceof Tag) ) return false;
+        if( typeof selector === 'string' ) {
+            selector = selector.trim();
+            if(selector.indexOf(',') < 0) {
+                return matchStr(selector, tag);    
+            } else {
+                return matchArr(selector.split(','), tag);
+            }
+            
+        } else if( typeof selector === 'function' ) {
+            return selector(tag)
+        } else if(Array.isArray(selector) ) {
+            return matchArr(selector, tag);
+        }
+        return false;
+        
+        function matchStr(sel, t)  {
+            var sl = sel.split(/(?=\.)|(?=#)/);
+            for(var i=0; i<sl.length; i++) {
+                var si = sl[i];
+                if(si.indexOf('#') === 0) {
+                    if(si.length > 1 && t.attrs.id !== si.substr(1) ) return false;
+                } else if(si.indexOf('.') === 0) {
+                    if(si.length > 1 && t.attrs.class.indexOf(si.substr(1)) < 0 ) return false;
+                } else {
+                    if(si !== '*' && t.name !== si) return false;
+                }
+            } 
+            return true
+        }
+        function matchArr(arr, t) {
+            for (var i = 0; i < arr.length; i++) {
+                var sel = arr[i];
+                if(nant.match(sel, t)) return true;
+            }
+            return false;
+        }
+    }
     nant.extend = function (base, extended) {
         base = base || {}; extended = extended || {};
         var eCls = getClass(extended.class);
@@ -52,12 +103,14 @@ function exports() {
     nant.uq = function(str) {
         return new Uq(str);
     }
+    
     function Tag(tag) {
         this.name = tag.name;
         this.attrs = { class: []};
-        nant.extend(this.attrs, tag.attrs);
-        this.body = tag.body;
+        this.bodyConf = tag.body;
         this.isVoid = tag.isVoid;
+        nant.extend(this.attrs, tag.attrs);
+        this.body = getBody(this, tag.body);
     }
     Tag.prototype.attr = function(attr, val) {
         if(val === undefined) {
@@ -93,7 +146,6 @@ function exports() {
         }
         return true;
     }
-    
     Tag.prototype.toggleClass = function(className, toggle) {
         var classes = Array.isArray(className) ? 
                         className : ( typeof className === 'string' ? className.match(/\S+/g) : [] )
@@ -101,7 +153,6 @@ function exports() {
         for (var i = 0; i < classes.length; i++) {
             var cn = classes[i];
             var ind = this.attrs.class.indexOf(cn);
-            console.log('indexOf ',cn, ' ', ind)
             var on = toggle !== undefined ? toggle : (ind < 0);
             if(on) {
                 if(ind < 0) {
@@ -115,8 +166,29 @@ function exports() {
         }
         return true;
     }
-    
+    Tag.prototype.match = function(selector) {
+        return nant.match(this, selector);
+    }
+    Tag.prototype.children = function(selector) {
+        var res = [];
+        var noSel = selector === undefined;
+        for (var i = 0; i < this.body.length; i++) {
+            var child = this.body[i];
+            if(noSel || nant.match(selector, child) ) res.push(child);
+        }
+        return res;
+    };
+    Tag.prototype.find = function(selector) {
+        var res = [];
+        if ( !selector ) return res;
+        res = res.concat( this.children(selector) )
         
+        for (var i = 0; i < this.body.length; i++) {
+            var child = this.body[i];
+            if( child instanceof Tag ) res =  res.concat( child.find(selector) );
+        }
+        return res;
+    };
     Tag.prototype.toString = function() {
         var self = this;
         var attrArr = [''];
@@ -139,7 +211,7 @@ function exports() {
             
         }
         
-        return '<' + self.name + attrArr.join(' ') + '>' + ( !self.isVoid ? getBody(self.body) + '</' + self.name + '>' : '') ;
+        return '<' + self.name + attrArr.join(' ') + '>' + ( !self.isVoid ? self.body.join('') + '</' + self.name + '>' : '') ;
         
         function getAttr(val, nested) {
             if( val === null || val === undefined || val === false ) {
@@ -170,24 +242,10 @@ function exports() {
             
             return val;
         }
-        
-        function getBody(bodyConf) {
-            var body = '';
-            if( Array.isArray(bodyConf) ) {
-                for (var i = 0; i < bodyConf.length; i++) {
-                    body = body + getBody(bodyConf[i]);
-                }
-            } else if(typeof bodyConf === 'function') {
-                body = bodyConf(self);
-            } else if(bodyConf !== null && bodyConf !== undefined) {
-                body = body + bodyConf;
-            }
-            return body;
-        }
     }
-    
     nant.Tag = Tag;
-    var ht = nant.ht = {};
+    
+    var ht = nant.ht = {}, mixins = [];;
     nant.getTagMembers = function(args) {
         var attrs, body;
         if(args.length > 0) {
@@ -203,7 +261,6 @@ function exports() {
             attrs: attrs || {}, body: body || ''
         }
     }
-    var mixins = [];
     nant.mixin = function(selector, fn, name) {
         function getFnName(fn) {
             var f = typeof fn == 'function';
@@ -226,36 +283,22 @@ function exports() {
             var tag = new Tag( config );
             for (var i = 0; i < mixins.length; i++) {
                 var mx = mixins[i];
-                if( match(mx.selector, tag) ) {
+                if( nant.match(mx.selector, tag) ) {
                     tag[mx.name] = mx.fn.bind(tag);
                 }
             }
             return tag;
         }
-        
-        function match(selector, tag) {
-            if(selector === '*') {
-                return true;
-            }
-            if( typeof selector === 'string' ) {
-                return selector === tag.name;
-            } else if( typeof selector === 'function' ) {
-                return selector(tag);
-            } else if(Array.isArray(selector) ) {
-                return selector.indexOf(tag.name) >= 0;
-            }
-            return false;
-        }
     }
-    var voidTags = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
-    var nvTags = ['a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'blockquote', 'body', 'button', 'canvas', 'caption', 'cite', 'code', 'colgroup', 'datalist', 'dd', 'del', 'details', 'dfn', 'div', 'dl', 'dt', 'em', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'html', 'i', 'iframe', 'ins', 'kbd', 'label', 'legend', 'li', 'map', 'mark', 'menu', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'u', 'ul', 'var', 'video'];
     
+    var voidTags = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+    var nonVoidTags = ['a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'blockquote', 'body', 'button', 'canvas', 'caption', 'cite', 'code', 'colgroup', 'datalist', 'dd', 'del', 'details', 'dfn', 'div', 'dl', 'dt', 'em', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'html', 'i', 'iframe', 'ins', 'kbd', 'label', 'legend', 'li', 'map', 'mark', 'menu', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'u', 'ul', 'var', 'video'];
     for (var i = 0; i < voidTags.length; i++) {
         var vtag = voidTags[i];
         ht[vtag] = nant.makeTag(vtag, true);
     }
-    for (var ii = 0; ii < nvTags.length; ii++) {
-        var nvtag = nvTags[ii];
+    for (var ii = 0; ii < nonVoidTags.length; ii++) {
+        var nvtag = nonVoidTags[ii];
         ht[nvtag] = nant.makeTag(nvtag, false);
     }
     

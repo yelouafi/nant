@@ -1,7 +1,32 @@
 var assert = require("assert")
 var nant = require("../nant"), ht = nant.ht;
 
-describe('attributes', function(){
+describe('nant', function() {
+    
+    it('should match by tag name', function () {
+        var tag = ht.div({ id: 'mydiv', class: ['form', 'group', 'col'] });
+        var tag2 = ht.input({ id: 'myinput', class: ['control', 'col'] });
+        
+        assert.ok( nant.match('div', tag) );
+        assert.ok( nant.match('div.form', tag) );
+        assert.ok( nant.match('div.form.group', tag) );
+        assert.ok( nant.match('#mydiv', tag) );
+        assert.ok( nant.match('div#mydiv.form.col', tag) );
+        assert.ok( nant.match('*.col', tag) );
+        assert.ok( !nant.match('*.sd1s21', tag) );
+        assert.ok( !nant.match('*#sd1s2', tag) );
+        assert.ok( nant.match('div, input', tag) );
+        assert.ok( nant.match(['div', 'input'], tag2) );
+        assert.ok( nant.match('*.col', tag) );
+        assert.ok( nant.match('*.col', tag2) );
+        
+        assert.ok( nant.match( function(t) {  return t.name === 'div' } , tag) );
+        
+    });
+    
+});
+
+describe('tag', function(){
     
     it('should return scalar attribute value', function () {
         var tag = ht.div({ id: 'mydiv' })
@@ -84,6 +109,74 @@ describe('attributes', function(){
         assert.ok( !div.hasClass('class2') );
     });
     
+    
+    it('should return matching children', function() {
+        
+        function formGroup(id, body) {
+            return ht.div({ class: 'form-group row', id: id }, body);
+        }
+        
+        var tag = ht.form(
+            formGroup('fg1',
+                [ ht.label(), ht.input() ]
+            ),
+            formGroup('fg2',
+                [ ht.label(), ht.input() ]
+            ),
+            ht.button('submit')
+        )
+        
+        assert.equal(
+            tag.children().length, 3    
+        )
+        
+        assert.equal(
+            tag.children('.form-group').length, 2    
+        )
+        
+        assert.equal(
+            tag.children('div#fg1').length, 1    
+        )
+            
+    });
+    
+    it('should return matching descendents at any level', function() {
+        
+        function formGroup(id, body) {
+            return ht.div({ class: 'form-group row', id: id }, body);
+        }
+        
+        var tag = ht.form(
+            formGroup('fg1', [ 
+                    ht.label(), 
+                    formGroup('fg1-1', [
+                        ht.label(), formGroup('fg1-1-1', [
+                            ht.label(), ht.input({ class: 'col'}), ht.input({ class: 'row' })
+                        ])
+                    ]),
+                    formGroup('fg1-2', [ ht.label(), ht.input({ class: 'row' })])
+            ]),
+            formGroup('fg2', [ ht.label(), ht.input({ class: 'col' })]), 
+            ht.button('submit')
+        )
+        
+        assert.equal(
+            tag.find().length, 0    
+        )
+        
+        assert.equal(
+            tag.find('div.form-group').length, 5    
+        )
+        
+        assert.equal(
+            tag.find('.row').length, 7    
+        )
+        
+        assert.equal(
+            tag.find('.col').length, 2    
+        )
+            
+    });
     
 });
     
