@@ -1,35 +1,19 @@
-`nant` lets you generate your html templates with plain javascript (browser and server).
+**nant** lets you generate your html templates with plain javascript (browser and server).
 
 Features
 ========
 
-- No need to learn another language, it's plain javascript
+- No need to learn another language, just old good javascript
 - Tags are simple POJOs (Plain Old *Javascript* Object) and can be manipulated with ease before stringification
-- Uses all language constructs to define your reusable building blocks
-- Mixins allows defining custom methods in selected Tags
+- Uses all language constructs and programming techniques to define your reusable building blocks
+- Attach your own methods to specific Tags using Mixins
 
 Get started
 ===========
 
-###On the server
-
-Install it
-
-```
-npm install nant
-```
-
-Then use it
-
-```javascript
-// get the Html Templates namespace
-var ht = require('nant').ht;
-var html = ht.p('this is as easy as writing javascript code').toString();
-```
-
 ###On the Browser :
 
-Just add `nant.js` to your includes.
+It's just one file - `nant.js` - to import in your page.
 
 
 ```html
@@ -47,6 +31,22 @@ Just add `nant.js` to your includes.
 	</body>
 </html>
 ```
+
+###On the server
+
+```
+npm install nant
+```
+
+Then
+
+```javascript
+// get the Html Templates namespace
+var ht = require('nant').ht;
+var html = ht.p('this is as easy as writing javascript code').toString();
+```
+
+
 
 -------------------------------------------------------------------------------------------
 
