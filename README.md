@@ -77,7 +77,7 @@ console.log( html );
 </div>
 ```
 
-You can pass nested tags as body (note you don'need to call `toString()` on nested tags**)
+You can pass nested tags as body (note you don'need to call `toString()` on nested tags)
 
 ```javascript
 ht.form({ id: 'myform', class: 'myclass' },
