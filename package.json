@@ -1,6 +1,6 @@
 {
   "name": "nant",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "A 'not-another-templating-language' for javascripters",
   "main": "nant.js",
   "scripts": {
