@@ -254,7 +254,7 @@ divTag.match('div#mydiv.form.col');     // true
 divTag.match('*.col');                  // true
 inputTag.match('*.col');                // true
 
-
+// uses custom matching method
 divTag.match( function(t) {  return t.name === 'div' } );
 ```
 
