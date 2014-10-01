@@ -167,7 +167,7 @@ function exports() {
         return true;
     }
     Tag.prototype.match = function(selector) {
-        return nant.match(this, selector);
+        return nant.match(selector, this);
     }
     Tag.prototype.children = function(selector) {
         var res = [];
