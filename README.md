@@ -394,8 +394,10 @@ If `isVoid` parameter is true, then any body provided to the tag function will b
 
 ---------------------------------------------------------------------------------------------
 
-Tutorial: Bootstrap forms
-=====================================
+Examples
+========
+
+###Bootstrap form layout
 
 the following exemple builds a twitter bootstrap form
 
@@ -425,6 +427,7 @@ bt.horzForm = function horzForm() {
     return ht.form({ class: 'form-horizontal', role: 'form' }, body );
 }
 
+//building a formGroup template is as simple as defining functions
 bt.formGroup = function formGroup(input, label) {
     return ht.div({ class: 'form-group' },
         label,
@@ -459,7 +462,7 @@ var layout = {
     offset: { class: 'col-sm-offset-2' }
 }
 
-// Form group apply layout def to its input and label
+// Form group taks care of applying layout definition to its input and label childs
 bt.formGroup = function formGroup(input, label) {
     input = ht.div(input).attr(layout.input);
     if(label) {
@@ -472,6 +475,7 @@ bt.formGroup = function formGroup(input, label) {
     )
 }
 
+// Now input and label no longer references bootstrap layout definition
 var myHtml = bt.horzForm(
     bt.formGroup(
         ht.input({ type: 'email', class: 'form-control', id: 'email', placeholder: 'Email' }),
@@ -493,7 +497,7 @@ function BtFormLayout(cols, media) {
     this.cols = cols;
     this.media = media;
 	
-	this.label = { class: 'col-'+ this.media + '-' + this.cols[0] };
+    this.label = { class: 'col-'+ this.media + '-' + this.cols[0] };
     this.input = { class: 'col-'+ this.media + '-' + this.cols[1] };
     this.offset = { class: 'col-'+ this.media + '-offset-' + this.cols[0] };
 }
@@ -501,7 +505,7 @@ function BtFormLayout(cols, media) {
 var layout = new BtFormLayout([2,10], 'sm');
 
 bt.formGroup = function formGroup(input, label, layout) {
-    input = ht.div(input).mixin(layout.input);
+    input = ht.div(input).attr(layout.input);
     if(label) {
         label = label.attr(layout.label);
     } else {
@@ -524,3 +528,28 @@ var myHtml = bt.horzForm(
 ```
 
 You can go ever further to acheive better reusability; Because you're in the javascript land, you can apply your favourite desgin patterns.
+
+###Automatic Bootstrap form generation
+
+```javascript
+//define field config
+var userModel = [
+    { name: 'fullname', label : 'Full name' },
+    { name: 'username', label : 'Username', required: true },
+    { name: 'password', label: 'Password', type: 'password' },
+    { name: 'email', label : 'Email', type: 'email', required: true }
+];
+
+//template for a single field
+bt.field = function (config) {
+    return ht.div({ class: 'form-group' },
+        ht.label({ for: config.id }, config.label),
+        ht.input({ id: config.id, type: config.type, class: 'form-control', 
+                placeholder: config.label, required: config.required })
+    )
+}
+
+var myHtml = ht.form(
+    userModel.map( bt.field )
+);
+```
