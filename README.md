@@ -328,7 +328,7 @@ nant.mixin( function(tag) {
 
 
 ------------------------------------------------------------------------------------------
-###Object attributes (aka angular/knockout/... users)
+###Object attributes (for angular/knockout/... users)
 
 **nant** supports passing nested objects as attribute values, this is useful in some cases (if you're working with data-binding libs like **angular** or **knockout**)
 
