@@ -50,7 +50,7 @@ var html = ht.p('this is as easy as writing javascript code').toString();
 
 -------------------------------------------------------------------------------------------
 
-So what's this ? A new Templating Language ?
+Tag creation
 =============================================
 
 Obviously no; Instead **javascript is the templating language**.
