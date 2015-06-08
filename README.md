@@ -51,9 +51,7 @@ var html = ht.p('this is as easy as writing javascript code').toString();
 -------------------------------------------------------------------------------------------
 
 Tag creation
-=============================================
-
-Obviously no; Instead **javascript is the templating language**.
+=============
 
 Html tags are exposed as functions in the `ht` namespace and tag attributes are passed as arguments.
 
