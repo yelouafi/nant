@@ -11,7 +11,7 @@ Features
 Get started
 ===========
 
-###On the Browser :
+### On the Browser :
 
 It's just one file - `nant.js` - to import in your page.
 
@@ -32,7 +32,7 @@ It's just one file - `nant.js` - to import in your page.
 </html>
 ```
 
-###On the server
+### On the server
 
 ```
 npm install nant
@@ -152,13 +152,13 @@ ht.input({ class: [ 'myclass',  { class1: 1 < 2, class2: 1 > 2 } ])
 
 ------------------------------------------------------------------------------------------
 
-##Tag manipulation
+## Tag manipulation
 
 all methods of the `ht` namespace returns an objet of type `Tag`; 
 
 the `Tag`'s prototype exposes a few methods; this is useful if you want to manipulate the tag object before calling `.toString()`
 
-###.attr( attrName [, attrValue ] )
+### .attr( attrName [, attrValue ] )
 
 get/set current attribute value
 
@@ -173,7 +173,7 @@ div.attr('name', 'newName');    // div.attr('name') === 'newName'
 note how class attribute was converted to an Array; internally all tags maintains an `Array` instance for `class` attribute
 
 
-###.attr( [ attrName1, attrName2, ...] )
+### .attr( [ attrName1, attrName2, ...] )
 
 When passed an array, returns an object with given attributes
 
@@ -182,7 +182,7 @@ var div = ht.input({ id:'myid', name: 'myname', placeholder: 'My Input' });
 div.attr(['id', 'name']); // { id:'myid', name: 'myname' }
 ```
 
-###.attr( object )
+### .attr( object )
 
 if you pass it an object, tag's attributes will be extended with object's members
 
@@ -194,7 +194,7 @@ div.attr('id'); // 'myid'
 div.attr('class'); // ['myclass', 'class1']
 ```
 
-###.hasClass()
+### .hasClass()
 
 used to check if tag instance references a css class
 
@@ -208,7 +208,7 @@ div.hasClass('myclass class1');     // true
 div.hasClass(['myclass', 'class2']);     // false
 ```
 
-###.toggleClass()
+### .toggleClass()
 
 is another familiar method to to toggle on/off css class references
 
@@ -228,7 +228,7 @@ div.toggleClass(['myclass', 'class2']);
 // div.hasClass('myclass') == true && div.hasClass('class2') == false
 ```
 
-###.match( selector )
+### .match( selector )
 
 Another useful method to check weather a tag matches the given selector; note only a small subset of css selectors is supported at the moment
 You can also supply a function (see example below) to perform tag matching
@@ -256,18 +256,18 @@ inputTag.match('*.col');                // true
 divTag.match( function(t) {  return t.name === 'div' } );
 ```
 
-###.children( [ selector ] )
+### .children( [ selector ] )
 
 returns all direct children of the current tag; if provided, selector will be used to filter out the result
 
-###.find( selector )
+### .find( selector )
 
 returns all descendents (including non-direct children) matching the given selector
 
 
 ------------------------------------------------------------------------------------------------------------------------
 
-###Mixins
+### Mixins
 
 Mixins allows attaching custom methods to selected tags
 
@@ -326,7 +326,7 @@ nant.mixin( function(tag) {
 
 
 ------------------------------------------------------------------------------------------
-###Object attributes (for angular/knockout/... users)
+### Object attributes (for angular/knockout/... users)
 
 **nant** supports passing nested objects as attribute values, this is useful in some cases (if you're working with data-binding libs like **angular** or **knockout**)
 
@@ -370,7 +370,7 @@ ht.p({ ngClass: {strike: nant.uq('!deleted'), bold: nant.uq('some.isBold()') } }
 
 -----------------------------------------------------------------------------------------------
 
-###Defining Custom Tags
+### Defining Custom Tags
 =======================
 
 Simply, use `nant.makeTag` to make a tag builder function
@@ -395,7 +395,7 @@ If `isVoid` parameter is true, then any body provided to the tag function will b
 Examples
 ========
 
-###Bootstrap form layout
+### Bootstrap form layout
 
 the following exemple builds a twitter bootstrap form
 
@@ -527,7 +527,7 @@ var myHtml = bt.horzForm(
 
 You can go ever further to acheive better reusability; Because you're in the javascript land, you can apply your favourite desgin patterns.
 
-###Automatic Bootstrap form generation
+### Automatic Bootstrap form generation
 
 ```javascript
 //define field config
